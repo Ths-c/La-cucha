@@ -42,17 +42,25 @@ presiona facturación. La contra (spin-down con cold start ~1 min al volver
 inactivo) es aceptable para un panel de un solo dueño. Supabase no puede ejecutar
 Node/Express (solo edge functions), por lo que no es candidato.
 
-## D4. Autenticación futura → Supabase Auth
+## D4. Autenticación → token HMAC de un solo dueño (interino)
 
-**Decisión:** Para la fase de auth se usará **Supabase Auth** (email + contraseña).
+**Decisión:** Se implementó auth para un único dueño con Bearer token HMAC
+firmado con `AUTH_SECRET` y login contra `ADMIN_EMAIL`/`ADMIN_PASSWORD`
+(variables de entorno). Todos los endpoints administrativos lo exigen.
 
-**Alternativas:** JWT custom con bcrypt en Express; implementación propia de
-sessions.
+**Alternativas:** Supabase Auth (email + contraseña); JWT custom con bcrypt.
 
-**Motivo:** Supabase ya aporta Postgres y Storage; añadir Supabase Auth evita
-almacenar contraseñas hasheadas en nuestro código/DB y reduce la superficie de
-seguridad. Se documenta ahora y se implementa en la fase correspondiente. No se
-implementa en esta fase (un solo dueño, sin requisito funcional de login aún).
+**Motivo:** el panel es de un solo dueño y ya debía quedar protegido en
+producción. Este esquema es autónomo, sin dependencias externas y fácil de
+testear. Queda documentado en D4b el plan de migrar a Supabase Auth si en el
+futuro se necesita multiusuario o recuperación de contraseña.
+
+### D4b. Supabase Auth (futuro)
+
+Si se necesita multiusuario o "olvidé mi contraseña", migrar a **Supabase Auth**:
+login en el frontend con Supabase y verificación del JWT de Supabase en el
+backend (en lugar del HMAC propio). No se implementa ahora para no
+sobre-complejificar un panel de un solo dueño.
 
 ## D5. Estructura de carpetas por capas
 

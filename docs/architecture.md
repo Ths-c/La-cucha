@@ -104,4 +104,5 @@ Se dejan puntos de extensión razonables, pero no se construye nada por adelanta
 
 - Multi-proveedor por producto → futura tabla junction `ProductSupplier`.
 - Multi-tenant / multi-usuario → diferido; no hay tablas multi-tenant ahora.
-- Auth → Supabase Auth (documentado en `decisions.md`), no implementado.
+- Auth → token HMAC de un solo dueño (ya implementado, ver `decisions.md` D4);
+  migrar a Supabase Auth si se necesita multiusuario.

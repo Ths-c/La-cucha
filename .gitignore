@@ -26,3 +26,7 @@ Thumbs.db
 # ── Prisma ──
 api/prisma/*.db
 api/prisma/*.db-journal
+
+# ── Skills / asistentes ──
+.agents/
+skills-lock.json

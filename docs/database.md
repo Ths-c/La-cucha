@@ -46,8 +46,11 @@ erDiagram
         int id PK
         int supplierId FK
         string name
+        string notes "opcional"
         int categoryId FK "opcional"
+        supplierProductStatus status "ACTIVE|INACTIVE"
         datetime createdAt
+        datetime updatedAt
     }
     STOCK_MOVEMENT {
         int id PK

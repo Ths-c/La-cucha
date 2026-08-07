@@ -27,6 +27,7 @@ docs/                   # Documentación técnica
   ├─ architecture.md
   ├─ database.md
   ├─ api.md
+  ├─ deployment.md
   └─ decisions.md
 ```
 
@@ -38,10 +39,14 @@ docs/                   # Documentación técnica
 
 ### 1. Variables de entorno
 
-- `api/`: copia `api/.env.example` → `api/.env` y completa `DATABASE_URL`
-  (Supabase Postgres) y las claves de Supabase.
-- `web/`: copia `web/.env.example` → `web/.env.local` con la ANON key de
-  Supabase (solo valores públicos).
+- `api/`: copia `api/.env.example` → `api/.env`. Completa `DATABASE_URL`
+  (Supabase Postgres) y las claves de Supabase, además de la auth de un solo
+  dueño: `AUTH_SECRET`, `ADMIN_EMAIL`, `ADMIN_PASSWORD` y `ADMIN_ID`.
+- `web/`: copia `web/.env.example` → `web/.env.local` con `VITE_API_URL` (por
+  defecto `http://localhost:4000/api`).
+
+Para desplegar y para la lista completa de variables, ver
+`docs/deployment.md`.
 
 ### 2. Backend (API)
 
@@ -59,14 +64,16 @@ npm install
 npm run dev            # http://localhost:5173
 ```
 
-### 4. Base de datos (cuando se configure Supabase)
-
-En la Fase 2 se ejecutará:
+### 4. Base de datos
 
 ```bash
 cd api
 npx prisma migrate dev
 ```
+
+Las tablas (Product, ProductMovement, Supplier, SupplierMovement) viven en
+Postgres de Supabase. La API es de **un solo dueño protegido por Bearer token**
+(ver `docs/api.md` y `docs/decisions.md` D4).
 
 ## Scripts
 
