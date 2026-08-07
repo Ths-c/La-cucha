@@ -1,0 +1,125 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── Enums ────────────────────────────────────────────────────────────────
+
+enum ProductStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum SupplierStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum MovementType {
+  BUY
+  SALE
+  BREAKAGE
+  EXPIRY
+  DONATION
+  INTERNAL_CONSUMPTION
+  MANUAL_ADJUST
+}
+
+// ── Categorías ───────────────────────────────────────────────────────────
+
+model Category {
+  id               Int               @id @default(autoincrement())
+  name             String            @unique @map("name")
+  products         Product[]
+  supplierProducts SupplierProduct[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("categories")
+}
+
+// ── Proveedores ──────────────────────────────────────────────────────────
+
+model Supplier {
+  id             Int             @id @default(autoincrement())
+  name           String
+  whatsappNumber String
+  notes          String?
+  status         SupplierStatus  @default(ACTIVE)
+  products       Product[]
+  supplierProducts SupplierProduct[]
+  stockMovements StockMovement[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("suppliers")
+}
+
+// ── Productos de la tienda ───────────────────────────────────────────────
+
+model Product {
+  id         Int           @id @default(autoincrement())
+  name       String
+  categoryId Int
+  category   Category      @relation(fields: [categoryId], references: [id])
+  supplierId Int?
+  supplier   Supplier?     @relation(fields: [supplierId], references: [id])
+  stock      Int           @default(0)
+  stockMin   Int           @default(0)
+  status     ProductStatus @default(ACTIVE)
+  imageUrl   String?
+  movements  StockMovement[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([categoryId])
+  @@index([supplierId])
+  @@index([status])
+  @@map("products")
+}
+
+// ── Listado de productos que ofrece cada proveedor ───────────────────────
+// Independiente de Product (no hay FK a Product).
+
+model SupplierProduct {
+  id         Int       @id @default(autoincrement())
+  supplierId Int
+  supplier   Supplier  @relation(fields: [supplierId], references: [id])
+  name       String
+  categoryId Int?
+  category   Category? @relation(fields: [categoryId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([supplierId])
+  @@map("supplier_products")
+}
+
+// ── Historial de movimientos de stock ────────────────────────────────────
+
+model StockMovement {
+  id          Int          @id @default(autoincrement())
+  productId   Int
+  product     Product      @relation(fields: [productId], references: [id])
+  type        MovementType
+  quantity    Int
+  stockBefore Int
+  stockAfter  Int
+  supplierId  Int?
+  supplier    Supplier?    @relation(fields: [supplierId], references: [id])
+  note        String?
+
+  createdAt DateTime @default(now())
+
+  @@index([productId])
+  @@index([createdAt])
+  @@index([supplierId])
+  @@map("stock_movements")
+}
