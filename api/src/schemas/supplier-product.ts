@@ -5,7 +5,7 @@ export const createSupplierProductSchema = z
   .object({
     name: shortTextSchema,
     notes: longTextSchema,
-    categoryId: idSchema.optional(),
+    categoryId: idSchema.nullable().optional(),
   })
   .strict()
 

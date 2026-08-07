@@ -10,6 +10,7 @@ import { SuppliersPage } from '@/pages/SuppliersPage'
 import { SupplierFormPage } from '@/pages/SupplierFormPage'
 import { SupplierDetailPage } from '@/pages/SupplierDetailPage'
 import { MovementsPage } from '@/pages/MovementsPage'
+import { CategoriesPage } from '@/pages/CategoriesPage'
 import { TrashPage } from '@/pages/TrashPage'
 import { RequireAuth } from '@/features/auth/RequireAuth'
 
@@ -30,6 +31,7 @@ export function App() {
           <Route path="/suppliers/:id" element={<SupplierDetailPage />} />
           <Route path="/suppliers/:id/edit" element={<SupplierFormPage />} />
           <Route path="/movements" element={<MovementsPage />} />
+          <Route path="/categories" element={<CategoriesPage />} />
           <Route path="/trash" element={<TrashPage />} />
           <Route path="*" element={<HomePage />} />
         </Route>

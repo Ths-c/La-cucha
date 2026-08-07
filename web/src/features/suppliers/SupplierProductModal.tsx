@@ -49,7 +49,7 @@ export function SupplierProductModal({ open, onClose, supplierId, item }: Suppli
 
   const onSubmit = async (values: SupplierProductFormValues) => {
     try {
-      const input = { name: values.name, categoryId: values.categoryId ?? null, notes: values.notes?.trim() || undefined }
+      const input = { name: values.name, categoryId: values.categoryId ?? undefined, notes: values.notes?.trim() || undefined }
       if (item) {
         await update.mutateAsync({ supplierId, itemId: item.id, input })
         toast.success('Producto actualizado')

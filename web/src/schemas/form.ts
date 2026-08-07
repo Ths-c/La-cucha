@@ -57,6 +57,11 @@ export const supplierProductFormSchema = z.object({
 })
 export type SupplierProductFormValues = z.infer<typeof supplierProductFormSchema>
 
+export const categoryFormSchema = z.object({
+  name: z.string().trim().min(1, 'El nombre es obligatorio').max(120, 'Nombre demasiado largo'),
+})
+export type CategoryFormValues = z.infer<typeof categoryFormSchema>
+
 export const stockInFormSchema = z.object({
   type: z.enum(['BUY', 'MANUAL_ADJUST'], { message: 'Tipo inválido' }),
   quantity: requiredNumber('La cantidad debe ser un entero positivo'),

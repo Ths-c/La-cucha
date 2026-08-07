@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import {
   CloseIcon,
+  CategoriesIcon,
   DashboardIcon,
   MenuIcon,
   MovementsIcon,
@@ -16,6 +17,7 @@ const NAV_ITEMS = [
   { to: '/dashboard', label: 'Dashboard', icon: DashboardIcon },
   { to: '/products', label: 'Productos', icon: ProductsIcon },
   { to: '/suppliers', label: 'Proveedores', icon: SuppliersIcon },
+  { to: '/categories', label: 'Categorías', icon: CategoriesIcon },
   { to: '/movements', label: 'Movimientos', icon: MovementsIcon },
   { to: '/trash', label: 'Papelera', icon: TrashIcon },
 ]
