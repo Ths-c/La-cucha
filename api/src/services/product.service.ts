@@ -8,6 +8,7 @@ import type {
 } from '../repositories/product.repository'
 import type { CategoryRepository } from '../repositories/category.repository'
 import type { SupplierRepository } from '../repositories/supplier.repository'
+import type { SupplierProductRepository } from '../repositories/supplier-product.repository'
 import type { StockService } from './stock.service'
 import type { CreateProductInput, ProductListQuery, UpdateProductInput } from '../schemas/product'
 
@@ -15,6 +16,7 @@ export interface ProductServiceDeps {
   productRepository: ProductRepository
   categoryRepository: CategoryRepository
   supplierRepository: SupplierRepository
+  supplierProductRepository: SupplierProductRepository
   stockService: StockService
 }
 
@@ -37,6 +39,21 @@ export class ProductService {
     if (supplier.status === 'INACTIVE') {
       throw new AppError(400, ERROR_CODES.INVALID_RELATION, 'El proveedor está inactivo')
     }
+  }
+
+  // Mantiene el listado de pedidos del proveedor al día: cuando un producto de la
+  // tienda tiene un proveedor asignado, se asegura de que exista una entrada en su
+  // listado (SupplierProduct) para poder ordenarlo por WhatsApp.
+  private async ensureSupplierProduct(supplierId: number, name: string, categoryId: number): Promise<void> {
+    const normalized = normalizeName(name)
+    const existing = await this.deps.supplierProductRepository.findBySupplierAndName(supplierId, normalized)
+    if (existing) return
+    await this.deps.supplierProductRepository.create(supplierId, {
+      name: normalized,
+      notes: null,
+      categoryId,
+      status: 'ACTIVE',
+    })
   }
 
   async list(query: ProductListQuery): Promise<Paginated<ProductWithRelations>> {
@@ -96,6 +113,10 @@ export class ProductService {
       })
     }
 
+    if (input.supplierId != null) {
+      await this.ensureSupplierProduct(input.supplierId, product.name, product.categoryId)
+    }
+
     const created = await this.get(product.id)
     return created
   }
@@ -120,6 +141,15 @@ export class ProductService {
     if (!updated) {
       throw new AppError(404, ERROR_CODES.NOT_FOUND, 'Producto no encontrado')
     }
+
+    if (input.supplierId != null) {
+      await this.ensureSupplierProduct(
+        input.supplierId,
+        input.name ?? existing.name,
+        input.categoryId ?? existing.categoryId,
+      )
+    }
+
     return this.get(id)
   }
 
@@ -153,4 +183,8 @@ export class ProductService {
       throw new AppError(404, ERROR_CODES.NOT_FOUND, 'Producto no encontrado')
     }
   }
+}
+
+function normalizeName(name: string): string {
+  return name.trim().replace(/\s+/g, ' ')
 }

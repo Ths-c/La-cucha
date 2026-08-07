@@ -33,7 +33,7 @@ export function ProductFormPage() {
   const createMutation = useCreateProduct()
   const updateMutation = useUpdateProduct()
   const { data: categories } = useCategories()
-  const { data: suppliers } = useSuppliers({ status: 'ACTIVE', limit: 200 })
+  const { data: suppliers } = useSuppliers({ status: 'ACTIVE', limit: 100 })
   const { data: product, isLoading, isError } = useProduct(productId)
 
   const schema = isEdit ? updateProductFormSchema : createProductFormSchema

@@ -27,6 +27,7 @@ export const productService = new ProductService({
   productRepository,
   categoryRepository,
   supplierRepository,
+  supplierProductRepository,
   stockService,
 })
 
