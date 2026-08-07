@@ -21,7 +21,7 @@ export function DashboardPage() {
             <StatCard label="Productos activos" value={data.activeProducts} />
             <StatCard label="Stock bajo" value={data.lowStockCount} tone="red" />
             <StatCard label="Movimientos del mes" value={data.movementsThisMonth} />
-            <StatCard label="Productos más comprados" value={data.topPurchased.length} />
+            <StatCard label="Producto más vendido" value={data.topPurchased[0]?.name ?? '—'} />
           </div>
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -40,16 +40,20 @@ function StatCard({
   tone = 'green',
 }: {
   label: string
-  value: number
+  value: number | string
   tone?: 'green' | 'red'
 }) {
   return (
     <Card>
       <CardBody>
         <p className="text-sm text-slate-500">{label}</p>
-        <p className={`mt-1 text-3xl font-bold ${tone === 'red' ? 'text-red-600' : 'text-slate-900'}`}>
-          {value}
-        </p>
+        {typeof value === 'number' ? (
+          <p className={`mt-1 text-3xl font-bold ${tone === 'red' ? 'text-red-600' : 'text-slate-900'}`}>
+            {value}
+          </p>
+        ) : (
+          <p className="mt-1 text-lg font-semibold leading-snug text-slate-900">{value}</p>
+        )}
       </CardBody>
     </Card>
   )
