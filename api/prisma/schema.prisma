@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // ── Enums ────────────────────────────────────────────────────────────────
@@ -15,6 +16,11 @@ enum ProductStatus {
 }
 
 enum SupplierStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum SupplierProductStatus {
   ACTIVE
   INACTIVE
 }
@@ -89,16 +95,21 @@ model Product {
 // Independiente de Product (no hay FK a Product).
 
 model SupplierProduct {
-  id         Int       @id @default(autoincrement())
+  id         Int                  @id @default(autoincrement())
   supplierId Int
-  supplier   Supplier  @relation(fields: [supplierId], references: [id])
+  supplier   Supplier             @relation(fields: [supplierId], references: [id])
   name       String
+  notes      String?
   categoryId Int?
-  category   Category? @relation(fields: [categoryId], references: [id])
+  category   Category?            @relation(fields: [categoryId], references: [id])
+  status     SupplierProductStatus @default(ACTIVE)
 
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([supplierId])
+  @@index([categoryId])
+  @@index([status])
   @@map("supplier_products")
 }
 
