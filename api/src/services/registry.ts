@@ -6,11 +6,13 @@ import { categoryRepository } from '../repositories/category.repository'
 import { supplierRepository } from '../repositories/supplier.repository'
 import { supplierProductRepository } from '../repositories/supplier-product.repository'
 import { stockMovementRepository } from '../repositories/stock-movement.repository'
+import { clientRepository } from '../repositories/client.repository'
 import { StockService } from './stock.service'
 import { ProductService } from './product.service'
 import { CategoryService } from './category.service'
 import { SupplierService } from './supplier.service'
 import { SupplierProductService } from './supplier-product.service'
+import { ClientService } from './client.service'
 import { DashboardService } from './dashboard.service'
 import { OrderService } from './order.service'
 
@@ -39,6 +41,11 @@ export const supplierProductService = new SupplierProductService({
   supplierProductRepository,
   supplierRepository,
   categoryRepository,
+})
+
+export const clientService = new ClientService({
+  clientRepository,
+  movementRepository: stockMovementRepository,
 })
 
 export const dashboardService = new DashboardService({

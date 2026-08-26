@@ -17,6 +17,8 @@ export interface StockMovementRepository {
   count(filters: Omit<MovementListFilters, 'skip' | 'limit'>): Promise<number>
   listByProduct(productId: number, type?: MovementType, skip?: number, limit?: number): Promise<StockMovement[]>
   countByProduct(productId: number, type?: MovementType): Promise<number>
+  listByClient(clientId: number, type?: MovementType, skip?: number, limit?: number): Promise<StockMovement[]>
+  countByClient(clientId: number, type?: MovementType): Promise<number>
   countInRange(from: Date, to: Date): Promise<number>
   sumQuantitiesByProduct(type: MovementType, limit: number): Promise<{ productId: number; totalQuantity: number }[]>
 }
@@ -67,6 +69,20 @@ class PrismaStockMovementRepository implements StockMovementRepository {
 
   async countByProduct(productId: number, type?: MovementType): Promise<number> {
     return prisma.stockMovement.count({ where: { productId, ...(type ? { type } : {}) } })
+  }
+
+  async listByClient(clientId: number, type?: MovementType, skip = 0, limit = 20): Promise<StockMovement[]> {
+    return prisma.stockMovement.findMany({
+      where: { clientId, ...(type ? { type } : {}) },
+      orderBy: { createdAt: 'desc' },
+      include: { product: { select: { id: true, name: true } } },
+      skip,
+      take: limit,
+    })
+  }
+
+  async countByClient(clientId: number, type?: MovementType): Promise<number> {
+    return prisma.stockMovement.count({ where: { clientId, ...(type ? { type } : {}) } })
   }
 
   async countInRange(from: Date, to: Date): Promise<number> {

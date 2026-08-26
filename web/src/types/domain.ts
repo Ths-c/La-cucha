@@ -3,6 +3,7 @@
 export type ProductStatus = 'ACTIVE' | 'INACTIVE'
 export type SupplierStatus = 'ACTIVE' | 'INACTIVE'
 export type SupplierProductStatus = 'ACTIVE' | 'INACTIVE'
+export type ClientStatus = 'ACTIVE' | 'INACTIVE'
 
 export type MovementType =
   | 'BUY'
@@ -33,6 +34,16 @@ export interface Supplier {
 export interface CategoryRef {
   id: number
   name: string
+}
+
+export interface Client {
+  id: number
+  name: string
+  contact: string | null
+  notes: string | null
+  status: ClientStatus
+  createdAt: string
+  updatedAt: string
 }
 
 export interface SupplierRef {
@@ -155,6 +166,13 @@ export interface SupplierListParams {
   limit?: number
   search?: string
   status?: SupplierStatus
+}
+
+export interface ClientListParams {
+  page?: number
+  limit?: number
+  search?: string
+  status?: ClientStatus
 }
 
 export interface SupplierProductListParams {

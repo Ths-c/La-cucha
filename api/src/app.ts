@@ -9,6 +9,7 @@ import { authRoutes } from './routes/auth.routes'
 import { productRoutes } from './routes/product.routes'
 import { categoryRoutes } from './routes/category.routes'
 import { supplierRoutes } from './routes/supplier.routes'
+import { clientRoutes } from './routes/client.routes'
 import { movementRoutes } from './routes/movement.routes'
 import { dashboardRoutes, orderRoutes } from './routes/dashboard-order.routes'
 
@@ -38,6 +39,7 @@ export function createApp() {
   app.use('/api/products', requireAuth, productRoutes)
   app.use('/api/categories', requireAuth, categoryRoutes)
   app.use('/api/suppliers', requireAuth, supplierRoutes)
+  app.use('/api/clients', requireAuth, clientRoutes)
   app.use('/api/movements', requireAuth, movementRoutes)
   app.use('/api/dashboard', requireAuth, dashboardRoutes)
   app.use('/api/orders', requireAuth, orderRoutes)

@@ -1,6 +1,8 @@
 import { apiFetch } from '@/lib/api/client'
 import type {
   Category,
+  Client,
+  ClientListParams,
   DashboardSummary,
   Movement,
   MovementListParams,
@@ -47,6 +49,7 @@ export interface StockOutInput {
   type: Exclude<MovementType, 'BUY'>
   quantity: number
   supplierId?: number | null
+  clientId?: number | null
   note?: string
 }
 
@@ -78,6 +81,19 @@ export interface UpdateSupplierProductInput {
 
 export interface CreateCategoryInput {
   name: string
+}
+
+export interface CreateClientInput {
+  name: string
+  contact?: string | null
+  notes?: string
+}
+
+export interface UpdateClientInput {
+  name?: string
+  contact?: string | null
+  notes?: string | null
+  status?: 'ACTIVE' | 'INACTIVE'
 }
 
 // ────────────────────────────── Productos ──────────────────────────────
@@ -141,6 +157,21 @@ export const supplierApi = {
 
 export const movementApi = {
   list: (params: MovementListParams) => apiFetch<Paginated<Movement>>('/movements', { query: params }),
+}
+
+// ────────────────────────────── Clientes ──────────────────────────────
+
+export const clientApi = {
+  list: (params: ClientListParams) => apiFetch<Paginated<Client>>('/clients', { query: params }),
+  trash: (params: ClientListParams) => apiFetch<Paginated<Client>>('/clients/trash', { query: params }),
+  get: (id: number) => apiFetch<Client>(`/clients/${id}`),
+  create: (input: CreateClientInput) => apiFetch<Client>('/clients', { method: 'POST', body: input }),
+  update: (id: number, input: UpdateClientInput) =>
+    apiFetch<Client>(`/clients/${id}`, { method: 'PATCH', body: input }),
+  deactivate: (id: number) => apiFetch<Client>(`/clients/${id}`, { method: 'DELETE' }),
+  restore: (id: number) => apiFetch<Client>(`/clients/${id}/restore`, { method: 'POST' }),
+  purchases: (id: number, params: { page?: number; limit?: number }) =>
+    apiFetch<Paginated<Movement>>(`/clients/${id}/purchases`, { query: params }),
 }
 
 // ────────────────────────────── Dashboard ──────────────────────────────

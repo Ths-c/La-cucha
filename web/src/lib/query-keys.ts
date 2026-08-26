@@ -9,6 +9,11 @@ export const qk = {
   suppliers: (params?: object) =>
     ['suppliers', params ?? 'all'] as const,
   supplier: (id: number) => ['suppliers', id] as const,
+  clients: (params?: object) =>
+    ['clients', params ?? 'all'] as const,
+  client: (id: number) => ['clients', id] as const,
+  clientPurchases: (id: number, params?: object) =>
+    ['clients', id, 'purchases', params ?? 'all'] as const,
   supplierProducts: (id: number, params?: object) =>
     ['suppliers', id, 'products', params ?? 'all'] as const,
   trash: ['trash'] as const,

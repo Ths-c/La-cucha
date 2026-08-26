@@ -9,6 +9,7 @@ import { ProductDetailPage } from '@/pages/ProductDetailPage'
 import { SuppliersPage } from '@/pages/SuppliersPage'
 import { SupplierFormPage } from '@/pages/SupplierFormPage'
 import { SupplierDetailPage } from '@/pages/SupplierDetailPage'
+import { ClientsPage } from '@/pages/ClientsPage'
 import { MovementsPage } from '@/pages/MovementsPage'
 import { CategoriesPage } from '@/pages/CategoriesPage'
 import { TrashPage } from '@/pages/TrashPage'
@@ -30,6 +31,7 @@ export function App() {
           <Route path="/suppliers/new" element={<SupplierFormPage />} />
           <Route path="/suppliers/:id" element={<SupplierDetailPage />} />
           <Route path="/suppliers/:id/edit" element={<SupplierFormPage />} />
+          <Route path="/clients" element={<ClientsPage />} />
           <Route path="/movements" element={<MovementsPage />} />
           <Route path="/categories" element={<CategoriesPage />} />
           <Route path="/trash" element={<TrashPage />} />

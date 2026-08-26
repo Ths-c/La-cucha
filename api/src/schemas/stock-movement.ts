@@ -37,6 +37,7 @@ export const stockOutSchema = z
     ),
     quantity: baseMovementSchema.quantity,
     supplierId: baseMovementSchema.supplierId,
+    clientId: idSchema.optional(),
     note: baseMovementSchema.note,
   })
   .strict()

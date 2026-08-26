@@ -9,6 +9,7 @@ export interface StockAdjustmentInput {
   type: MovementType
   quantity: number
   supplierId?: number
+  clientId?: number
   note?: string
 }
 
@@ -98,6 +99,7 @@ export class StockService {
         stockBefore: previousStock,
         stockAfter: resultingStock,
         supplierId: input.supplierId ?? null,
+        clientId: input.clientId ?? null,
         note: input.note ?? null,
       })
 

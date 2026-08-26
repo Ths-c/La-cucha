@@ -62,6 +62,13 @@ export const categoryFormSchema = z.object({
 })
 export type CategoryFormValues = z.infer<typeof categoryFormSchema>
 
+export const clientFormSchema = z.object({
+  name: z.string().trim().min(1, 'El nombre es obligatorio').max(120, 'Nombre demasiado largo'),
+  contact: z.string().trim().max(120, 'El contacto es demasiado largo').optional().nullable(),
+  notes: z.string().trim().max(1000).optional().nullable(),
+})
+export type ClientFormValues = z.infer<typeof clientFormSchema>
+
 export const stockInFormSchema = z.object({
   type: z.enum(['BUY', 'MANUAL_ADJUST'], { message: 'Tipo inválido' }),
   quantity: requiredNumber('La cantidad debe ser un entero positivo'),
@@ -78,6 +85,7 @@ const stockOutType = z.enum(
 export const stockOutFormSchema = z.object({
   type: stockOutType,
   quantity: z.coerce.number().int().positive('La cantidad debe ser un entero positivo'),
+  clientId: optionalId.nullable().optional(),
   note: z.string().trim().max(1000).optional().nullable(),
 })
 export type StockOutFormValues = z.infer<typeof stockOutFormSchema>

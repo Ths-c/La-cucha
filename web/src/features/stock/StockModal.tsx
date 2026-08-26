@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { ApiError } from '@/lib/api/client'
 import { useStockIn, useStockOut } from '@/features/products/hooks'
 import { useSuppliers } from '@/features/suppliers/hooks'
+import { useClients } from '@/features/clients/hooks'
 import { useToast } from '@/components/ui/Toast'
 import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
@@ -50,9 +51,13 @@ export function StockModal({ open, onClose, productId, productName, currentStock
   const { data: suppliers } = useSuppliers({ status: 'ACTIVE', limit: 200 })
   const supplierOptions = (suppliers?.items ?? []).map((s) => ({ value: s.id, label: s.name }))
 
+  const { data: clients } = useClients({ status: 'ACTIVE', limit: 200 })
+  const clientOptions = (clients?.items ?? []).map((c) => ({ value: c.id, label: c.name }))
+
   const {
     register,
     handleSubmit,
+    watch,
     reset,
     formState: { errors },
   } = useForm<StockFormValues>({
@@ -63,6 +68,9 @@ export function StockModal({ open, onClose, productId, productName, currentStock
       ...(isIn ? { supplierId: undefined as undefined } : {}),
     },
   })
+
+  const outType = watch('type')
+  const isSale = !isIn && outType === 'SALE'
 
   const close = () => {
     reset()
@@ -85,7 +93,12 @@ export function StockModal({ open, onClose, productId, productName, currentStock
         const input = values as StockOutFormValues
         await stockOut.mutateAsync({
           id: productId,
-          input: { type: input.type, quantity: Number(input.quantity), note: input.note ?? undefined },
+          input: {
+            type: input.type,
+            quantity: Number(input.quantity),
+            clientId: isSale ? input.clientId ?? null : null,
+            note: input.note ?? undefined,
+          },
         })
         toast.success(`Salida registrada (${input.quantity} u.)`)
       }
@@ -132,6 +145,16 @@ export function StockModal({ open, onClose, productId, productName, currentStock
             placeholder="Sin proveedor"
             options={supplierOptions}
             {...register('supplierId')}
+          />
+        )}
+        {isSale && (
+          <Select
+            id="clientId"
+            label="Cliente"
+            placeholder="Sin cliente"
+            options={clientOptions}
+            {...register('clientId')}
+            error={(errors as unknown as Record<string, { message?: string }>).clientId?.message}
           />
         )}
         <Textarea

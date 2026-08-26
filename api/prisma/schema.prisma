@@ -25,6 +25,11 @@ enum SupplierProductStatus {
   INACTIVE
 }
 
+enum ClientStatus {
+  ACTIVE
+  INACTIVE
+}
+
 enum MovementType {
   BUY
   SALE
@@ -113,6 +118,22 @@ model SupplierProduct {
   @@map("supplier_products")
 }
 
+// ── Clientes ───────────────────────────────────────────────────────────
+
+model Client {
+  id        Int          @id @default(autoincrement())
+  name      String
+  contact   String?
+  notes     String?
+  status    ClientStatus @default(ACTIVE)
+  movements StockMovement[]
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  @@index([status])
+  @@map("clients")
+}
+
 // ── Historial de movimientos de stock ────────────────────────────────────
 
 model StockMovement {
@@ -125,6 +146,8 @@ model StockMovement {
   stockAfter  Int
   supplierId  Int?
   supplier    Supplier?    @relation(fields: [supplierId], references: [id])
+  clientId    Int?
+  client      Client?      @relation(fields: [clientId], references: [id], onDelete: SetNull)
   note        String?
 
   createdAt DateTime @default(now())
@@ -132,5 +155,6 @@ model StockMovement {
   @@index([productId])
   @@index([createdAt])
   @@index([supplierId])
+  @@index([clientId])
   @@map("stock_movements")
 }
