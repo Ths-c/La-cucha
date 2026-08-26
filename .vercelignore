@@ -1,4 +1,0 @@
-# El backend (Express/Prisma) se despliega en Render, no en Vercel.
-# Ignorarlo evita que Vercel intente crear Serverless Functions desde api/
-# y supere el límite del plan Hobby (12 funciones).
-api/
