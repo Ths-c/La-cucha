@@ -1,7 +1,0 @@
-{
-  "name": "lacucha",
-  "private": true,
-  "scripts": {
-    "build": "cd web && npm run build"
-  }
-}

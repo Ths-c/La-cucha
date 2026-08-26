@@ -1,5 +1,6 @@
 {
-  "buildCommand": "cd web && npm run build",
-  "outputDirectory": "dist",
-  "framework": "vite"
+  "installCommand": "npm --prefix web install",
+  "buildCommand": "npm --prefix web run build",
+  "outputDirectory": "web/dist",
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
 }
