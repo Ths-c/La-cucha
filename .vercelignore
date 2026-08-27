@@ -1,4 +1,6 @@
 # El backend (Express/Prisma) se despliega en Render, no en Vercel.
-# Ignorarlo evita que Vercel intente crear Serverless Functions desde api/
-# y supere el límite del plan Hobby (12 funciones).
-api/
+# Ignorar SOLO el directorio "api/" de la RAÍZ (el backend).
+# Clave: usar "/api/" con barra inicial. Sin la barra, "api/" excluiría
+# CUALQUIER carpeta llamada "api" en cualquier nivel, incluida
+# web/src/lib/api/ (la librería HTTP del frontend) y rompería el build.
+/api/
