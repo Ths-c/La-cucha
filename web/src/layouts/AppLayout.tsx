@@ -7,6 +7,7 @@ import {
   DashboardIcon,
   MenuIcon,
   MovementsIcon,
+  NotesIcon,
   ProductsIcon,
   SuppliersIcon,
   TrashIcon,
@@ -21,6 +22,7 @@ const NAV_ITEMS = [
   { to: '/clients', label: 'Clientes', icon: ClientsIcon },
   { to: '/categories', label: 'Categorías', icon: CategoriesIcon },
   { to: '/movements', label: 'Movimientos', icon: MovementsIcon },
+  { to: '/notes', label: 'Notas', icon: NotesIcon },
   { to: '/trash', label: 'Papelera', icon: TrashIcon },
 ]
 

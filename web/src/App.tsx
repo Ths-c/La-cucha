@@ -13,6 +13,7 @@ import { ClientsPage } from '@/pages/ClientsPage'
 import { MovementsPage } from '@/pages/MovementsPage'
 import { CategoriesPage } from '@/pages/CategoriesPage'
 import { TrashPage } from '@/pages/TrashPage'
+import { NotesPage } from '@/pages/NotesPage'
 import { RequireAuth } from '@/features/auth/RequireAuth'
 
 export function App() {
@@ -33,9 +34,10 @@ export function App() {
           <Route path="/suppliers/:id/edit" element={<SupplierFormPage />} />
           <Route path="/clients" element={<ClientsPage />} />
           <Route path="/movements" element={<MovementsPage />} />
-          <Route path="/categories" element={<CategoriesPage />} />
-          <Route path="/trash" element={<TrashPage />} />
-          <Route path="*" element={<HomePage />} />
+<Route path="/categories" element={<CategoriesPage />} />
+        <Route path="/trash" element={<TrashPage />} />
+        <Route path="/notes" element={<NotesPage />} />
+        <Route path="*" element={<HomePage />} />
         </Route>
       </Route>
     </Routes>
