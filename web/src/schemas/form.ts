@@ -14,6 +14,7 @@ export const createProductFormSchema = z.object({
   supplierId: optionalId.nullable().optional(),
   stock: nonNegative('El stock inicial no puede ser negativo').default(0),
   stockMin: nonNegative('El stock mínimo no puede ser negativo').default(0),
+  unit: z.enum(['UNITS', 'GRAMS']).default('UNITS'),
   imageUrl: z
     .string()
     .trim()
@@ -29,6 +30,7 @@ export const updateProductFormSchema = z.object({
   categoryId: requiredNumber('Seleccioná una categoría'),
   supplierId: optionalId.nullable().optional(),
   stockMin: nonNegative('El stock mínimo no puede ser negativo').default(0),
+  unit: z.enum(['UNITS', 'GRAMS']).optional(),
   imageUrl: z
     .string()
     .trim()

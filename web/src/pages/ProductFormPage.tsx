@@ -51,6 +51,7 @@ export function ProductFormPage() {
       supplierId: undefined,
       stock: 0,
       stockMin: 0,
+      unit: 'UNITS',
       imageUrl: '',
     },
   })
@@ -62,6 +63,7 @@ export function ProductFormPage() {
         categoryId: product.categoryId,
         supplierId: product.supplierId ?? undefined,
         stockMin: product.stockMin,
+        unit: product.unit,
         imageUrl: product.imageUrl ?? '',
       })
     }
@@ -81,6 +83,7 @@ export function ProductFormPage() {
             categoryId: Number(values.categoryId),
             supplierId: values.supplierId ?? null,
             stockMin: Number(values.stockMin ?? 0),
+            unit: values.unit,
             imageUrl: values.imageUrl?.trim() || null,
           },
         })
@@ -93,6 +96,7 @@ export function ProductFormPage() {
           supplierId: values.supplierId ?? null,
           stock: Number(values.stock ?? 0),
           stockMin: Number(values.stockMin ?? 0),
+          unit: values.unit,
           imageUrl: values.imageUrl?.trim() || undefined,
         })
         toast.success('Producto creado')
@@ -157,6 +161,14 @@ export function ProductFormPage() {
                 hint="Aviso visual cuando el stock baja de este valor."
                 {...register('stockMin')}
                 error={errors.stockMin?.message}
+              />
+              <Select
+                id="unit"
+                label="Unidad de stock"
+                placeholder="Unidad"
+                options={[{ value: 'UNITS', label: 'Unidades' }, { value: 'GRAMS', label: 'Gramos' }]}
+                {...register('unit')}
+                error={errors.unit?.message}
               />
               <Input
                 id="imageUrl"

@@ -33,7 +33,7 @@ export function useCreateClient() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (input: CreateClientInput) => clientApi.create(input),
-    onSuccess: () => qc.invalidateQueries({ queryKey: qk.clients() }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: qk.clients({ status: 'ACTIVE', limit: 200 }) }),
   })
 }
 

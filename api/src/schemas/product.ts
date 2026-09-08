@@ -8,6 +8,7 @@ export const createProductSchema = z
     supplierId: idSchema.optional(),
     stock: z.coerce.number().int().min(0, 'El stock inicial no puede ser negativo').default(0),
     stockMin: z.coerce.number().int().min(0, 'El stock mínimo no puede ser negativo').default(0),
+    unit: z.enum(['UNITS', 'GRAMS']).default('UNITS'),
     imageUrl: z.string().url('La URL de la imagen no es válida').max(500).optional().or(z.literal('')),
   })
   .strict()
@@ -19,6 +20,7 @@ export const updateProductSchema = z
     supplierId: idSchema.nullable().optional(),
     stockMin: z.coerce.number().int().min(0, 'El stock mínimo no puede ser negativo').optional(),
     status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
+    unit: z.enum(['UNITS', 'GRAMS']).optional(),
     imageUrl: z.string().url('La URL de la imagen no es válida').max(500).optional().nullable().or(z.literal('')),
   })
   .strict()

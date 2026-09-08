@@ -101,6 +101,7 @@ export class ProductService {
       supplierId: input.supplierId ?? null,
       stock: 0,
       stockMin: input.stockMin ?? 0,
+      unit: input.unit ?? 'UNITS',
       imageUrl: input.imageUrl || null,
       status: 'ACTIVE',
     })

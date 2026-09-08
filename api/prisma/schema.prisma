@@ -40,6 +40,11 @@ enum MovementType {
   MANUAL_ADJUST
 }
 
+enum Unit {
+  UNITS
+  GRAMS
+}
+
 // ── Categorías ───────────────────────────────────────────────────────────
 
 model Category {
@@ -57,7 +62,7 @@ model Category {
 // ── Proveedores ──────────────────────────────────────────────────────────
 
 model Supplier {
-  id             Int             @id @default(autoincrement())
+  id             Int               @id @default(autoincrement())
   name           String
   whatsappNumber String
   notes          String?
@@ -75,15 +80,16 @@ model Supplier {
 // ── Productos de la tienda ───────────────────────────────────────────────
 
 model Product {
-  id         Int           @id @default(autoincrement())
+  id         Int               @id @default(autoincrement())
   name       String
   categoryId Int
-  category   Category      @relation(fields: [categoryId], references: [id])
+  category   Category        @relation(fields: [categoryId], references: [id])
   supplierId Int?
-  supplier   Supplier?     @relation(fields: [supplierId], references: [id])
-  stock      Int           @default(0)
-  stockMin   Int           @default(0)
-  status     ProductStatus @default(ACTIVE)
+  supplier   Supplier?       @relation(fields: [supplierId], references: [id])
+  stock      Int               @default(0)
+  stockMin   Int               @default(0)
+  unit       Unit              @default(UNITS)
+  status     ProductStatus   @default(ACTIVE)
   imageUrl   String?
   movements  StockMovement[]
 

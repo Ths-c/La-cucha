@@ -7,11 +7,8 @@ import { useToast } from '@/components/ui/Toast'
 import { useNotes } from '@/features/notes/hooks'
 import { NoteForm } from '@/features/notes/NoteForm'
 import { NotesList } from '@/features/notes/NotesList'
-import { buildWhatsAppMessage } from '@/utils/notes'
-import { buildWhatsAppUrl } from '@/utils/phone'
+import { sendNotesViaWhatsApp, getConfiguredWhatsAppNumber } from '@/utils/notes'
 import type { Note } from '@/features/notes/types'
-
-const WHATSAPP_NUMBER = '+5491155566677'
 
 export function NotesPage() {
   const { notes, createNote, editNote, removeNote } = useNotes()
@@ -47,8 +44,12 @@ export function NotesPage() {
       return
     }
 
-    const message = buildWhatsAppMessage(notes)
-    const url = buildWhatsAppUrl(WHATSAPP_NUMBER, message)
+    const url = sendNotesViaWhatsApp(notes)
+    if (!url) {
+      toast('Configurá un número de WhatsApp primero', 'info')
+      return
+    }
+
     window.open(url, '_blank', 'noopener,noreferrer')
     toast('Abriendo WhatsApp...', 'info')
   }
@@ -79,16 +80,23 @@ export function NotesPage() {
       <Card>
         <CardHeader
           title="Enviar a WhatsApp"
-          subtitle={`Número configurado: ${WHATSAPP_NUMBER}`}
+          subtitle={
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-slate-500">Número: </span>
+              <span className="font-medium text-slate-900">{getConfiguredWhatsAppNumber() || '(no configurado)'}</span>
+            </div>
+          }
           action={
-            <Button
-              variant="secondary"
-              onClick={handleSendToWhatsApp}
-              disabled={notes.length === 0}
-            >
-              <WhatsAppIcon className="size-4" />
-              Enviar todas las notas
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="secondary"
+                onClick={handleSendToWhatsApp}
+                disabled={notes.length === 0 || !getConfiguredWhatsAppNumber()}
+              >
+                <WhatsAppIcon className="size-4" />
+                Enviar todas las notas
+              </Button>
+            </div>
           }
         />
         <CardBody className="pt-0">

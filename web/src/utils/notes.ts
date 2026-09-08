@@ -1,4 +1,5 @@
 import type { Note } from '@/features/notes/types'
+import { buildWhatsAppUrl } from '@/utils/phone'
 
 const STORAGE_KEY = 'lacucha:notes'
 
@@ -63,4 +64,25 @@ export function buildWhatsAppMessage(notes: Note[]): string {
   }
   lines.pop()
   return lines.join('\n')
+}
+
+export function getConfiguredWhatsAppNumber(): string {
+  const stored = localStorage.getItem('lacucha:whatsappNumber')
+  if (stored) return stored
+  return ''
+}
+
+export function setConfiguredWhatsAppNumber(number: string): void {
+  localStorage.setItem('lacucha:whatsappNumber', number)
+}
+
+export function sendNotesViaWhatsApp(notes: Note[]): string | null {
+  const number = getConfiguredWhatsAppNumber()
+  if (!number) return null
+
+  const message = buildWhatsAppMessage(notes)
+  if (!message) return null
+
+  const whatsappUrl = buildWhatsAppUrl(number, message)
+  return whatsappUrl
 }

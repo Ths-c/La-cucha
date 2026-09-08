@@ -26,6 +26,7 @@ export interface CreateProductInput {
   supplierId?: number | null
   stock?: number
   stockMin?: number
+  unit?: 'UNITS' | 'GRAMS'
   imageUrl?: string
 }
 
@@ -35,6 +36,7 @@ export interface UpdateProductInput {
   supplierId?: number | null
   stockMin?: number
   status?: 'ACTIVE' | 'INACTIVE'
+  unit?: 'UNITS' | 'GRAMS'
   imageUrl?: string | null
 }
 

@@ -58,6 +58,7 @@ export interface Product {
   supplierId: number | null
   stock: number
   stockMin: number
+  unit: 'UNITS' | 'GRAMS'
   status: ProductStatus
   imageUrl: string | null
   createdAt: string
