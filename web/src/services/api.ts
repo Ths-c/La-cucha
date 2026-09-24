@@ -12,6 +12,7 @@ import type {
   Paginated,
   Product,
   ProductListParams,
+  ProductUnit,
   Supplier,
   SupplierListParams,
   SupplierProduct,
@@ -26,7 +27,9 @@ export interface CreateProductInput {
   supplierId?: number | null
   stock?: number
   stockMin?: number
-  unit?: 'UNITS' | 'GRAMS'
+  unit?: ProductUnit
+  price?: number | null
+  promoPrice?: number | null
   imageUrl?: string
 }
 
@@ -36,7 +39,9 @@ export interface UpdateProductInput {
   supplierId?: number | null
   stockMin?: number
   status?: 'ACTIVE' | 'INACTIVE'
-  unit?: 'UNITS' | 'GRAMS'
+  unit?: ProductUnit
+  price?: number | null
+  promoPrice?: number | null
   imageUrl?: string | null
 }
 

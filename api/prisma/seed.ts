@@ -56,14 +56,16 @@ async function main() {
   ])
 
   // ── Productos de la tienda ──
-  const [dogChow, excellent, arena, pipeta, royalMini, shampoo, juguete] = await Promise.all([
-    prisma.product.create({ data: { name: 'Dog Chow Adulto 15kg', categoryId: alimentos.id, supplierId: purina.id, stock: 12, stockMin: 5, status: 'ACTIVE' } }),
-    prisma.product.create({ data: { name: 'Excellent Adulto', categoryId: alimentos.id, supplierId: purina.id, stock: 3, stockMin: 10, status: 'ACTIVE' } }),
-    prisma.product.create({ data: { name: 'Arena Sanitaria 10kg', categoryId: higiene.id, supplierId: mayorista.id, stock: 40, stockMin: 10, status: 'ACTIVE' } }),
-    prisma.product.create({ data: { name: 'Pipeta Frontline 4x', categoryId: higiene.id, supplierId: mayorista.id, stock: 8, stockMin: 2, status: 'ACTIVE' } }),
-    prisma.product.create({ data: { name: 'Shampoo Perro 500ml', categoryId: higiene.id, supplierId: mayorista.id, stock: 15, stockMin: 5, status: 'ACTIVE' } }),
-    prisma.product.create({ data: { name: 'Royal Canin Mini Adulto', categoryId: alimentos.id, supplierId: royal.id, stock: 0, stockMin: 4, status: 'ACTIVE' } }),
-    prisma.product.create({ data: { name: 'Pelota de goma grande', categoryId: juguetes.id, supplierId: null, stock: 25, stockMin: 5, status: 'ACTIVE' } }),
+  // unit: UNITS = por unidad/bolsa (precio por unidad), KG = suelto (precio por kg).
+  const [dogChow, excellent, arena, pipeta, royalMini, shampoo, juguete, suelto] = await Promise.all([
+    prisma.product.create({ data: { name: 'Dog Chow Adulto 15kg', categoryId: alimentos.id, supplierId: purina.id, stock: 12, stockMin: 5, unit: 'UNITS', price: 45000, promoPrice: 41999, status: 'ACTIVE' } }),
+    prisma.product.create({ data: { name: 'Excellent Adulto', categoryId: alimentos.id, supplierId: purina.id, stock: 3, stockMin: 10, unit: 'UNITS', price: 38000, status: 'ACTIVE' } }),
+    prisma.product.create({ data: { name: 'Arena Sanitaria 10kg', categoryId: higiene.id, supplierId: mayorista.id, stock: 40, stockMin: 10, unit: 'UNITS', price: 12000, status: 'ACTIVE' } }),
+    prisma.product.create({ data: { name: 'Pipeta Frontline 4x', categoryId: higiene.id, supplierId: mayorista.id, stock: 8, stockMin: 2, unit: 'UNITS', price: 9500, status: 'ACTIVE' } }),
+    prisma.product.create({ data: { name: 'Shampoo Perro 500ml', categoryId: higiene.id, supplierId: mayorista.id, stock: 15, stockMin: 5, unit: 'UNITS', price: 6800, status: 'ACTIVE' } }),
+    prisma.product.create({ data: { name: 'Royal Canin Mini Adulto', categoryId: alimentos.id, supplierId: royal.id, stock: 0, stockMin: 4, unit: 'UNITS', price: 52000, status: 'ACTIVE' } }),
+    prisma.product.create({ data: { name: 'Pelota de goma grande', categoryId: juguetes.id, supplierId: null, stock: 25, stockMin: 5, unit: 'UNITS', price: 3500, status: 'ACTIVE' } }),
+    prisma.product.create({ data: { name: 'Alimento suelto x kg', categoryId: alimentos.id, supplierId: purina.id, stock: 22.5, stockMin: 5, unit: 'KG', price: 8500, status: 'ACTIVE' } }),
   ])
 
   // ── Movimientos (historial consistente con el stock actual) ──
@@ -79,8 +81,8 @@ async function main() {
       { productId: dogChow.id, type: 'SALE', quantity: 8, note: 'Venta mostrador', createdAt: now },
       { productId: dogChow.id, type: 'SALE', quantity: 12, note: 'Venta mostrador', createdAt: now },
       // Excellent: 0→5→3
-      { productId: extra.id, type: 'BUY', quantity: 5, supplierId: purina.id, note: 'Compra inicial', createdAt: lastWeek },
-      { productId: extra.id, type: 'SALE', quantity: 2, note: 'Venta mostrador', createdAt: now },
+      { productId: excellent.id, type: 'BUY', quantity: 5, supplierId: purina.id, note: 'Compra inicial', createdAt: lastWeek },
+      { productId: excellent.id, type: 'SALE', quantity: 2, note: 'Venta mostrador', createdAt: now },
       // Arena: 0→40
       { productId: arena.id, type: 'BUY', quantity: 40, supplierId: mayorista.id, note: 'Compra mensual', createdAt: lastWeek },
       // Pipeta: 0→10→8
@@ -93,6 +95,9 @@ async function main() {
       { productId: royalMini.id, type: 'EXPIRY', quantity: 6, note: 'Producto vencido', createdAt: now },
       // Juguete: 0→25
       { productId: juguete.id, type: 'BUY', quantity: 25, supplierId: mayorista.id, note: 'Compra inicial', createdAt: lastWeek },
+      // Suelto por KG: 0→25→22.5
+      { productId: suelto.id, type: 'BUY', quantity: 25, supplierId: purina.id, note: 'Compra inicial', createdAt: lastWeek },
+      { productId: suelto.id, type: 'SALE', quantity: 2.5, note: 'Venta suelto', createdAt: now },
     ],
   })
 

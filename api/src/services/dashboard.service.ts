@@ -16,6 +16,7 @@ export interface LowestStockProduct {
   name: string
   stock: number
   stockMin: number
+  unit: 'UNITS' | 'KG'
   supplier: { id: number; name: string } | null
 }
 
@@ -24,12 +25,14 @@ export interface LowStockProduct {
   name: string
   stock: number
   stockMin: number
+  unit: 'UNITS' | 'KG'
   supplier: { id: number; name: string } | null
 }
 
 export interface TopPurchasedProduct {
   id: number
   name: string
+  unit: 'UNITS' | 'KG'
   totalQuantity: number
 }
 
@@ -72,7 +75,7 @@ export class DashboardService {
       topPurchased: topPurchased
         .map((t) => {
           const product = topProductsByIds.find((p) => p.id === t.productId)
-          return { id: t.productId, name: product?.name ?? 'Producto', totalQuantity: t.totalQuantity }
+          return { id: t.productId, name: product?.name ?? 'Producto', unit: (product?.unit ?? 'UNITS') as 'UNITS' | 'KG', totalQuantity: t.totalQuantity }
         }),
     }
   }
@@ -94,9 +97,9 @@ export class DashboardService {
 }
 
 function toLowStock(p: ProductWithRelations): LowStockProduct {
-  return { id: p.id, name: p.name, stock: p.stock, stockMin: p.stockMin, supplier: p.supplier }
+  return { id: p.id, name: p.name, stock: p.stock, stockMin: p.stockMin, unit: p.unit as 'UNITS' | 'KG', supplier: p.supplier }
 }
 
 function toLowestStock(p: ProductWithRelations): LowestStockProduct {
-  return { id: p.id, name: p.name, stock: p.stock, stockMin: p.stockMin, supplier: p.supplier }
+  return { id: p.id, name: p.name, stock: p.stock, stockMin: p.stockMin, unit: p.unit as 'UNITS' | 'KG', supplier: p.supplier }
 }

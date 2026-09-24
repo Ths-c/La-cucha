@@ -42,6 +42,7 @@ export function ProductFormPage() {
     register,
     handleSubmit,
     reset,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<CreateProductFormValues>({
     resolver: zodResolver(schema) as unknown as Resolver<CreateProductFormValues>,
@@ -52,9 +53,15 @@ export function ProductFormPage() {
       stock: 0,
       stockMin: 0,
       unit: 'UNITS',
+      price: undefined,
+      promoPrice: undefined,
       imageUrl: '',
     },
   })
+
+  const unitValue = watch('unit') ?? 'UNITS'
+  const priceHint =
+    unitValue === 'KG' ? 'Precio por kilogramo. Opcional.' : 'Precio por unidad / bolsa. Opcional.'
 
   useEffect(() => {
     if (isEdit && product) {
@@ -64,6 +71,8 @@ export function ProductFormPage() {
         supplierId: product.supplierId ?? undefined,
         stockMin: product.stockMin,
         unit: product.unit,
+        price: product.price ?? undefined,
+        promoPrice: product.promoPrice ?? undefined,
         imageUrl: product.imageUrl ?? '',
       })
     }
@@ -84,6 +93,8 @@ export function ProductFormPage() {
             supplierId: values.supplierId ?? null,
             stockMin: Number(values.stockMin ?? 0),
             unit: values.unit,
+            price: values.price ?? null,
+            promoPrice: values.promoPrice ?? null,
             imageUrl: values.imageUrl?.trim() || null,
           },
         })
@@ -97,6 +108,8 @@ export function ProductFormPage() {
           stock: Number(values.stock ?? 0),
           stockMin: Number(values.stockMin ?? 0),
           unit: values.unit,
+          price: values.price ?? undefined,
+          promoPrice: values.promoPrice ?? undefined,
           imageUrl: values.imageUrl?.trim() || undefined,
         })
         toast.success('Producto creado')
@@ -145,9 +158,10 @@ export function ProductFormPage() {
               {!isEdit && (
                 <Input
                   id="stock"
-                  label="Stock inicial"
+                  label={unitValue === 'KG' ? 'Stock inicial (kg)' : 'Stock inicial (unidades)'}
                   type="number"
                   min={0}
+                  step={unitValue === 'KG' ? '0.001' : '1'}
                   hint="Solo se define al crear; luego se gestiona con entradas/salidas."
                   {...register('stock')}
                   error={errors.stock?.message}
@@ -155,9 +169,10 @@ export function ProductFormPage() {
               )}
               <Input
                 id="stockMin"
-                label="Stock mínimo"
+                label={unitValue === 'KG' ? 'Stock mínimo (kg)' : 'Stock mínimo (unidades)'}
                 type="number"
                 min={0}
+                step={unitValue === 'KG' ? '0.001' : '1'}
                 hint="Aviso visual cuando el stock baja de este valor."
                 {...register('stockMin')}
                 error={errors.stockMin?.message}
@@ -166,10 +181,37 @@ export function ProductFormPage() {
                 id="unit"
                 label="Unidad de stock"
                 placeholder="Unidad"
-                options={[{ value: 'UNITS', label: 'Unidades' }, { value: 'GRAMS', label: 'Gramos' }]}
+                options={[
+                  { value: 'UNITS', label: 'Unidades (bolsa, paquete)' },
+                  { value: 'KG', label: 'Kilogramos (suelto)' },
+                ]}
                 {...register('unit')}
                 error={errors.unit?.message}
               />
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <Input
+                  id="price"
+                  label="Precio"
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  placeholder="0.00"
+                  hint={priceHint}
+                  {...register('price')}
+                  error={errors.price?.message}
+                />
+                <Input
+                  id="promoPrice"
+                  label="Precio oferta"
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  placeholder="Opcional"
+                  hint="Debe ser menor o igual al precio normal."
+                  {...register('promoPrice')}
+                  error={errors.promoPrice?.message}
+                />
+              </div>
               <Input
                 id="imageUrl"
                 label="Imagen (URL)"

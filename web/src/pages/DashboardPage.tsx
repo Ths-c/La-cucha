@@ -4,6 +4,7 @@ import { PageHeader } from '@/components/PageHeader'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
 import { StockBadge } from '@/components/ui/StockBadge'
 import { ErrorState, LoadingState } from '@/components/ui/states'
+import { formatQuantity } from '@/utils'
 
 export function DashboardPage() {
   const { data, isLoading, isError, refetch } = useDashboard()
@@ -89,7 +90,7 @@ function LowStockList() {
                     <p className="truncate text-sm font-medium text-slate-800">{p.name}</p>
                     {p.supplier && <p className="text-xs text-slate-500">{p.supplier.name}</p>}
                   </div>
-                  <StockBadge stock={p.stock} stockMin={p.stockMin} />
+                  <StockBadge stock={p.stock} stockMin={p.stockMin} unit={p.unit} />
                 </Link>
               </li>
             ))}
@@ -125,7 +126,7 @@ function TopPurchased() {
                     {p.name}
                   </Link>
                 </div>
-                <span className="shrink-0 text-sm font-semibold text-slate-700">{p.totalQuantity} u.</span>
+                <span className="shrink-0 text-sm font-semibold text-slate-700">{formatQuantity(p.totalQuantity, p.unit)}</span>
               </li>
             ))}
           </ol>

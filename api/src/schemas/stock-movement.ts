@@ -4,8 +4,15 @@ import { idSchema, longTextSchema } from './common'
 const movementTypeLiteral = () =>
   z.enum(['BUY', 'SALE', 'BREAKAGE', 'EXPIRY', 'DONATION', 'INTERNAL_CONSUMPTION', 'MANUAL_ADJUST'])
 
+// Cantidades en unidades o kilogramos: positivas, hasta 3 decimales.
+const quantitySchema = z.coerce
+  .number()
+  .positive('La cantidad debe ser mayor a 0')
+  .max(1_000_000, 'La cantidad es demasiado grande')
+  .refine((v) => Math.abs(v * 1000 - Math.round(v * 1000)) < 1e-6, 'Máximo 3 decimales')
+
 const baseMovementSchema = {
-  quantity: z.coerce.number().int().positive('La cantidad debe ser un entero positivo'),
+  quantity: quantitySchema,
   supplierId: idSchema.optional(),
   note: longTextSchema,
 }

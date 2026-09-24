@@ -102,6 +102,8 @@ export class ProductService {
       stock: 0,
       stockMin: input.stockMin ?? 0,
       unit: input.unit ?? 'UNITS',
+      price: input.price ?? null,
+      promoPrice: input.promoPrice ?? null,
       imageUrl: input.imageUrl || null,
       status: 'ACTIVE',
     })
@@ -131,12 +133,23 @@ export class ProductService {
     if (input.categoryId !== undefined) await this.assertCategory(input.categoryId)
     if (input.supplierId !== undefined) await this.assertSupplier(input.supplierId)
 
+    // La oferta no puede superar al precio normal, también contra el valor
+    // guardado cuando el PATCH trae solo uno de los dos campos.
+    const effectivePrice = input.price !== undefined ? input.price : (existing.price ?? null)
+    const effectivePromo = input.promoPrice !== undefined ? input.promoPrice : (existing.promoPrice ?? null)
+    if (effectivePrice != null && effectivePromo != null && effectivePromo > effectivePrice) {
+      throw new AppError(400, ERROR_CODES.VALIDATION_ERROR, 'La oferta no puede ser mayor al precio normal')
+    }
+
     const updated = await this.deps.productRepository.update(id, {
       ...(input.name !== undefined ? { name: input.name } : {}),
       ...(input.categoryId !== undefined ? { categoryId: input.categoryId } : {}),
       ...(input.supplierId !== undefined ? { supplierId: input.supplierId } : {}),
       ...(input.stockMin !== undefined ? { stockMin: input.stockMin } : {}),
       ...(input.status !== undefined ? { status: input.status as ProductStatus } : {}),
+      ...(input.unit !== undefined ? { unit: input.unit } : {}),
+      ...(input.price !== undefined ? { price: input.price } : {}),
+      ...(input.promoPrice !== undefined ? { promoPrice: input.promoPrice } : {}),
       ...(input.imageUrl !== undefined ? { imageUrl: input.imageUrl || null } : {}),
     })
     if (!updated) {

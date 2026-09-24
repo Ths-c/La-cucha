@@ -9,13 +9,14 @@ import { Badge } from '@/components/ui/Badge'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { StockBadge } from '@/components/ui/StockBadge'
+import { PriceTag } from '@/components/ui/PriceTag'
 import { Pagination } from '@/components/ui/Pagination'
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/states'
 import { useToast } from '@/components/ui/Toast'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
 import { ProductImage } from '@/components/ui/ProductImage'
 import { PlusIcon } from '@/components/icons'
-import { STATUS_LABELS } from '@/utils'
+import { STATUS_LABELS, UNIT_LABELS } from '@/utils'
 import type { Product } from '@/types/domain'
 
 export function ProductsPage() {
@@ -143,7 +144,9 @@ export function ProductsPage() {
                     <th className="px-4 py-2.5 font-medium">Producto</th>
                     <th className="px-4 py-2.5 font-medium">Categoría</th>
                     <th className="px-4 py-2.5 font-medium">Proveedor</th>
+                    <th className="px-4 py-2.5 font-medium">Unidad</th>
                     <th className="px-4 py-2.5 font-medium">Stock</th>
+                    <th className="px-4 py-2.5 font-medium">Precio</th>
                     <th className="px-4 py-2.5 font-medium">Estado</th>
                     <th className="px-4 py-2.5 text-right font-medium">Acciones</th>
                   </tr>
@@ -162,7 +165,13 @@ export function ProductsPage() {
                       <td className="px-4 py-2.5 text-slate-600">{p.category.name}</td>
                       <td className="px-4 py-2.5 text-slate-600">{p.supplier?.name ?? '—'}</td>
                       <td className="px-4 py-2.5">
-                        <StockBadge stock={p.stock} stockMin={p.stockMin} />
+                        <Badge tone="slate">{UNIT_LABELS[p.unit]}</Badge>
+                      </td>
+                      <td className="px-4 py-2.5">
+                        <StockBadge stock={p.stock} stockMin={p.stockMin} unit={p.unit} />
+                      </td>
+                      <td className="px-4 py-2.5">
+                        <PriceTag price={p.price} promoPrice={p.promoPrice} unit={p.unit} />
                       </td>
                       <td className="px-4 py-2.5">
                         <Badge tone={p.status === 'ACTIVE' ? 'green' : 'slate'}>{STATUS_LABELS[p.status]}</Badge>
@@ -203,10 +212,11 @@ export function ProductsPage() {
                         {p.name}
                       </Link>
                       <p className="text-xs text-slate-500">
-                        {p.category.name} · {p.supplier?.name ?? 'Sin proveedor'}
+                        {p.category.name} · {p.supplier?.name ?? 'Sin proveedor'} · {UNIT_LABELS[p.unit]}
                       </p>
-                      <div className="mt-2 flex items-center gap-2">
-                        <StockBadge stock={p.stock} stockMin={p.stockMin} />
+                      <div className="mt-2 flex flex-wrap items-center gap-2">
+                        <StockBadge stock={p.stock} stockMin={p.stockMin} unit={p.unit} />
+                        <PriceTag price={p.price} promoPrice={p.promoPrice} unit={p.unit} />
                         <Badge tone={p.status === 'ACTIVE' ? 'green' : 'slate'}>{STATUS_LABELS[p.status]}</Badge>
                       </div>
                     </div>
@@ -252,6 +262,7 @@ export function ProductsPage() {
         productId={stockTarget?.product.id ?? 0}
         productName={stockTarget?.product.name ?? ''}
         currentStock={stockTarget?.product.stock ?? 0}
+        productUnit={stockTarget?.product.unit ?? 'UNITS'}
         direction={stockTarget?.direction ?? 'in'}
       />
       <ConfirmationDialog />

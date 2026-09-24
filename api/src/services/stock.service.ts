@@ -36,16 +36,18 @@ export const OUT_TYPES: MovementType[] = [
  *  - cada cambio se registra como StockMovement en la misma transacción;
  *  - una salida nunca deja el stock < 0 (guard atómico + check en DB);
  *  - tolera concurrencia (updateMany con guard `stock >= quantity`).
+ *  - cantidades con hasta 3 decimales (productos por KG); se redondea a
+ *    milésimas para evitar deriva de punto flotante.
  */
 export class StockService {
   constructor(private readonly deps: StockServiceDeps) {}
 
   async stockIn(productId: number, input: StockAdjustmentInput): Promise<StockAdjustmentResult> {
-    return this.adjust(productId, 'in', input)
+    return this.adjust(productId, 'in', { ...input, quantity: round3(input.quantity) })
   }
 
   async stockOut(productId: number, input: StockAdjustmentInput): Promise<StockAdjustmentResult> {
-    return this.adjust(productId, 'out', input)
+    return this.adjust(productId, 'out', { ...input, quantity: round3(input.quantity) })
   }
 
   private async adjust(
@@ -78,9 +80,10 @@ export class StockService {
         if (!ok) {
           throw new AppError(404, ERROR_CODES.NOT_FOUND, 'Producto no encontrado')
         }
-        resultingStock = previousStock + input.quantity
+        resultingStock = round3(previousStock + input.quantity)
       } else {
-        if (previousStock < input.quantity) {
+        // Epsilon para comparar floats (productos por KG con decimales).
+        if (previousStock + EPSILON < input.quantity) {
           throw new AppError(409, ERROR_CODES.INSUFFICIENT_STOCK, 'No hay stock suficiente para realizar este movimiento.')
         }
         // Guard atómico anti race condition: si otro request ya consumió stock,
@@ -89,7 +92,7 @@ export class StockService {
         if (!ok) {
           throw new AppError(409, ERROR_CODES.INSUFFICIENT_STOCK, 'No hay stock suficiente para realizar este movimiento.')
         }
-        resultingStock = previousStock - input.quantity
+        resultingStock = round3(Math.max(0, previousStock - input.quantity))
       }
 
       const movement = await this.deps.movementRepository.create(tx, {
@@ -117,4 +120,10 @@ export class StockService {
       }
     })
   }
+}
+
+const EPSILON = 1e-9
+
+function round3(value: number): number {
+  return Math.round(value * 1000) / 1000
 }

@@ -17,7 +17,8 @@ import {
   type StockInFormValues,
   type StockOutFormValues,
 } from '@/schemas/form'
-import { MOVEMENT_LABELS } from '@/utils'
+import { MOVEMENT_LABELS, UNIT_SHORT, formatQuantity } from '@/utils'
+import type { ProductUnit } from '@/types/domain'
 
 export type StockDirection = 'in' | 'out'
 
@@ -27,6 +28,7 @@ interface StockModalProps {
   productId: number
   productName: string
   currentStock: number
+  productUnit?: ProductUnit
   direction: StockDirection
 }
 
@@ -42,11 +44,20 @@ const OUT_TYPES: Array<'SALE' | 'BREAKAGE' | 'EXPIRY' | 'DONATION' | 'INTERNAL_C
 
 type StockFormValues = StockInFormValues | StockOutFormValues
 
-export function StockModal({ open, onClose, productId, productName, currentStock, direction }: StockModalProps) {
+export function StockModal({
+  open,
+  onClose,
+  productId,
+  productName,
+  currentStock,
+  productUnit = 'UNITS',
+  direction,
+}: StockModalProps) {
   const toast = useToast()
   const stockIn = useStockIn()
   const stockOut = useStockOut()
   const isIn = direction === 'in'
+  const suffix = UNIT_SHORT[productUnit]
 
   const { data: suppliers } = useSuppliers({ status: 'ACTIVE', limit: 200 })
   const supplierOptions = (suppliers?.items ?? []).map((s) => ({ value: s.id, label: s.name }))
@@ -88,7 +99,7 @@ export function StockModal({ open, onClose, productId, productName, currentStock
           id: productId,
           input: { type: input.type, quantity: Number(input.quantity), supplierId: input.supplierId ?? null, note: input.note ?? undefined },
         })
-        toast.success(`Entrada registrada (${input.quantity} u.)`)
+        toast.success(`Entrada registrada (${formatQuantity(Number(input.quantity), productUnit)})`)
       } else {
         const input = values as StockOutFormValues
         await stockOut.mutateAsync({
@@ -100,7 +111,7 @@ export function StockModal({ open, onClose, productId, productName, currentStock
             note: input.note ?? undefined,
           },
         })
-        toast.success(`Salida registrada (${input.quantity} u.)`)
+        toast.success(`Salida registrada (${formatQuantity(Number(input.quantity), productUnit)})`)
       }
       close()
     } catch (err) {
@@ -118,7 +129,7 @@ export function StockModal({ open, onClose, productId, productName, currentStock
       open={open}
       onClose={close}
       title={isIn ? 'Entrada de stock' : 'Salida de stock'}
-      description={`${productName} — stock actual: ${currentStock} u.`}
+      description={`${productName} — stock actual: ${formatQuantity(currentStock, productUnit)}`}
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <Select
@@ -130,11 +141,13 @@ export function StockModal({ open, onClose, productId, productName, currentStock
         />
         <Input
           id="quantity"
-          label="Cantidad"
+          label={`Cantidad (${suffix})`}
           type="number"
-          min={1}
-          inputMode="numeric"
+          min={0}
+          step={productUnit === 'KG' ? '0.001' : '1'}
+          inputMode="decimal"
           placeholder="0"
+          hint={productUnit === 'KG' ? 'Acepta decimales, ej: 1.5 kg.' : 'Cantidad en unidades.'}
           {...register('quantity')}
           error={errors.quantity?.message}
         />

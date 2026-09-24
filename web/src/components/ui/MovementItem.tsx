@@ -1,5 +1,6 @@
 import { Badge } from '@/components/ui/Badge'
-import { MOVEMENT_LABELS, MOVEMENT_SIGN, formatDateTime } from '@/utils'
+import { MOVEMENT_LABELS, MOVEMENT_SIGN, formatDateTime, formatQuantity } from '@/utils'
+import type { ProductUnit } from '@/types/domain'
 
 interface MovementRow {
   type: string
@@ -21,7 +22,7 @@ const typeTone: Record<string, 'green' | 'red' | 'amber' | 'slate'> = {
   INTERNAL_CONSUMPTION: 'slate',
 }
 
-export function MovementItem({ m }: { m: MovementRow }) {
+export function MovementItem({ m, unit = 'UNITS' }: { m: MovementRow; unit?: ProductUnit }) {
   const sign = MOVEMENT_SIGN[m.type]
   const isOut = sign === '-'
   return (
@@ -33,7 +34,7 @@ export function MovementItem({ m }: { m: MovementRow }) {
             className={`text-sm font-bold ${isOut ? 'text-red-600' : 'text-emerald-700'}`}
           >
             {sign ?? ''}
-            {m.quantity} u.
+            {formatQuantity(m.quantity, unit)}
           </span>
         </div>
         {m.note && <p className="mt-0.5 truncate text-xs text-slate-500">{m.note}</p>}
@@ -42,7 +43,7 @@ export function MovementItem({ m }: { m: MovementRow }) {
       <div className="shrink-0 text-right">
         <p className="text-xs text-slate-500">{formatDateTime(m.createdAt)}</p>
         <p className="text-xs text-slate-400">
-          {m.stockBefore} → {m.stockAfter}
+          {formatQuantity(m.stockBefore, unit)} → {formatQuantity(m.stockAfter, unit)}
         </p>
       </div>
     </div>

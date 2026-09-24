@@ -42,7 +42,7 @@ enum MovementType {
 
 enum Unit {
   UNITS
-  GRAMS
+  KG
 }
 
 // ── Categorías ───────────────────────────────────────────────────────────
@@ -86,9 +86,11 @@ model Product {
   category   Category        @relation(fields: [categoryId], references: [id])
   supplierId Int?
   supplier   Supplier?       @relation(fields: [supplierId], references: [id])
-  stock      Int               @default(0)
-  stockMin   Int               @default(0)
+  stock      Float             @default(0)
+  stockMin   Float             @default(0)
   unit       Unit              @default(UNITS)
+  price      Float?
+  promoPrice Float?
   status     ProductStatus   @default(ACTIVE)
   imageUrl   String?
   movements  StockMovement[]
@@ -147,9 +149,9 @@ model StockMovement {
   productId   Int
   product     Product      @relation(fields: [productId], references: [id])
   type        MovementType
-  quantity    Int
-  stockBefore Int
-  stockAfter  Int
+  quantity    Float
+  stockBefore Float
+  stockAfter  Float
   supplierId  Int?
   supplier    Supplier?    @relation(fields: [supplierId], references: [id])
   clientId    Int?

@@ -71,10 +71,10 @@ protegidas, dejando claro que la auth no está preparada (nunca la saltea).
 | Método | Ruta | Descripción | Request (conceptual) | Response |
 |---|---|---|---|---|
 | GET | `/products` | Listar productos (filtros: `status`, `categoryId`, `supplierId`, `search`, `lowStock`; paginado) | query params | `{ data: { items[], total, page, limit, totalPages } }` |
-| POST | `/products` | Crear producto (stock inicial => movimiento `BUY` `"Stock inicial"`) | `{ name, categoryId, supplierId?, stock?, stockMin?, imageUrl? }` | `201 { product }` |
+| POST | `/products` | Crear producto (stock inicial => movimiento `BUY` `"Stock inicial"`; `unit` = `UNITS` por unidad/bolsa o `KG` suelto con decimales; `price` normal y `promoPrice` oferta opcionales — en `KG` el precio es por kilogramo) | `{ name, categoryId, supplierId?, stock?, stockMin?, unit?, price?, promoPrice?, imageUrl? }` | `201 { product }` |
 | GET | `/products/trash` | Listar productos `INACTIVE` | — | `{ items[] }` |
 | GET | `/products/:id` | Detalle con relaciones (categoría, proveedor) | — | `{ product }` |
-| PATCH | `/products/:id` | Actualizar datos (NUNCA toca stock) | `{ name?, categoryId?, supplierId?, stockMin?, status?, imageUrl? }` | `{ product }` |
+| PATCH | `/products/:id` | Actualizar datos (NUNCA toca stock; la unidad se puede cambiar libremente; `promoPrice <= price`) | `{ name?, categoryId?, supplierId?, stockMin?, unit?, price?, promoPrice?, status?, imageUrl? }` | `{ product }` |
 | DELETE | `/products/:id` | Pasar a `INACTIVE` (papelera) — no borra físico | — | `{ product }` |
 | POST | `/products/:id/restore` | Restaurar a `ACTIVE` (valida relaciones) | — | `{ product }` |
 | POST | `/products/:id/stock/in` | Entrada de stock (`BUY` o `MANUAL_ADJUST`) | `{ type, quantity, supplierId?, note? }` | `{ data: { product, movement } }` |

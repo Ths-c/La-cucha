@@ -12,8 +12,8 @@ import { EmptyState, ErrorState, LoadingState } from '@/components/ui/states'
 import { StockBadge } from '@/components/ui/StockBadge'
 import { ProductImage } from '@/components/ui/ProductImage'
 import { useToast } from '@/components/ui/Toast'
-import { STATUS_LABELS, formatDate } from '@/utils'
-import type { ProductListParams, SupplierListParams } from '@/types/domain'
+import { STATUS_LABELS, UNIT_LABELS, formatDate } from '@/utils'
+import type { ProductListParams, ProductUnit, SupplierListParams } from '@/types/domain'
 
 type Tab = 'products' | 'suppliers'
 
@@ -93,6 +93,7 @@ export function TrashPage() {
                   imageUrl={p.imageUrl}
                   stock={p.stock}
                   stockMin={p.stockMin}
+                  unit={p.unit}
                   category={p.category.name}
                   createdAt={p.createdAt}
                   onRestore={() => onRestoreProduct(p.id)}
@@ -131,6 +132,7 @@ function ProductRow({
   imageUrl,
   stock,
   stockMin,
+  unit,
   category,
   createdAt,
   onRestore,
@@ -140,6 +142,7 @@ function ProductRow({
   imageUrl: string | null
   stock: number
   stockMin: number
+  unit: ProductUnit
   category: string
   createdAt: string
   onRestore: () => void
@@ -153,13 +156,13 @@ function ProductRow({
           <div className="min-w-0">
             <p className="truncate font-medium text-slate-800">{name}</p>
             <p className="text-xs text-slate-500">
-              {category} · {formatDate(createdAt)}
+              {category} · {UNIT_LABELS[unit]} · {formatDate(createdAt)}
             </p>
           </div>
         </div>
         <div className="flex items-center gap-3">
           <Badge tone="slate">{STATUS_LABELS.INACTIVE}</Badge>
-          <StockBadge stock={stock} stockMin={stockMin} />
+          <StockBadge stock={stock} stockMin={stockMin} unit={unit} />
           <Button size="sm" variant="outline" onClick={onRestore} loading={pending}>
             Restaurar
           </Button>

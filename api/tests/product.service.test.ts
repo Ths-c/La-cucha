@@ -57,3 +57,33 @@ describe('ProductService.trash', () => {
     expect(result).toBeDefined()
   })
 })
+
+describe('ProductService unidad y precio', () => {
+  it('guarda unidad KG, precio y oferta al crear', async () => {
+    const { service, productRepository } = setup()
+    await service.create({ name: 'Suelto', categoryId: 1, stock: 2.5, unit: 'KG', price: 8500, promoPrice: 7999 })
+    expect(productRepository.create).toHaveBeenCalledWith(
+      expect.objectContaining({ unit: 'KG', price: 8500, promoPrice: 7999 }),
+    )
+  })
+
+  it('persiste el cambio de unidad y precio al actualizar', async () => {
+    const { service, productRepository } = setup()
+    productRepository.findById.mockResolvedValueOnce({
+      id: 1, name: 'Suelto', categoryId: 1, price: 8500, promoPrice: null,
+    })
+    await service.update(1, { unit: 'KG', price: 9000 })
+    expect(productRepository.update).toHaveBeenCalledWith(
+      1,
+      expect.objectContaining({ unit: 'KG', price: 9000 }),
+    )
+  })
+
+  it('rechaza oferta mayor al precio guardado aunque el PATCH no traiga price', async () => {
+    const { service, productRepository } = setup()
+    productRepository.findById.mockResolvedValueOnce({
+      id: 1, name: 'X', categoryId: 1, price: 100, promoPrice: null,
+    })
+    await expect(service.update(1, { promoPrice: 150 })).rejects.toBeInstanceOf(AppError)
+  })
+})

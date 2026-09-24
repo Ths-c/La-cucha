@@ -13,6 +13,7 @@ import { Card, CardBody, CardHeader } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { StockBadge } from '@/components/ui/StockBadge'
+import { PriceTag } from '@/components/ui/PriceTag'
 import { Pagination } from '@/components/ui/Pagination'
 import { ErrorState, LoadingState, EmptyState } from '@/components/ui/states'
 import { ProductImage } from '@/components/ui/ProductImage'
@@ -20,7 +21,7 @@ import { MovementItem } from '@/components/ui/MovementItem'
 import { useToast } from '@/components/ui/Toast'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
 import { BackIcon, EditIcon } from '@/components/icons'
-import { STATUS_LABELS } from '@/utils'
+import { STATUS_LABELS, UNIT_LABELS } from '@/utils'
 
 export function ProductDetailPage() {
   const { id } = useParams()
@@ -108,6 +109,11 @@ export function ProductDetailPage() {
             <div className="space-y-2 text-sm">
               <InfoRow label="Categoría" value={product.category.name} />
               <InfoRow label="Proveedor" value={product.supplier?.name ?? '—'} />
+              <InfoRow label="Unidad" value={UNIT_LABELS[product.unit]} />
+              <InfoRow
+                label="Precio"
+                value={<PriceTag price={product.price} promoPrice={product.promoPrice} unit={product.unit} showPer />}
+              />
               <InfoRow label="Stock mínimo" value={String(product.stockMin)} />
               <InfoRow
                 label="Estado"
@@ -119,7 +125,7 @@ export function ProductDetailPage() {
               />
               <div className="flex items-center justify-between border-t border-slate-100 pt-2">
                 <span className="text-slate-500">Stock actual</span>
-                <StockBadge stock={product.stock} stockMin={product.stockMin} />
+                <StockBadge stock={product.stock} stockMin={product.stockMin} unit={product.unit} />
               </div>
             </div>
           </CardBody>
@@ -138,7 +144,7 @@ export function ProductDetailPage() {
               <>
                 <ul className="divide-y divide-slate-100 px-2">
                   {movementsQuery.data.items.map((m) => (
-                    <MovementItem key={m.id} m={m} />
+                    <MovementItem key={m.id} m={m} unit={product.unit} />
                   ))}
                 </ul>
                 <Pagination
@@ -159,6 +165,7 @@ export function ProductDetailPage() {
         productId={product.id}
         productName={product.name}
         currentStock={product.stock}
+        productUnit={product.unit}
         direction={stockTarget?.direction ?? 'in'}
       />
       <ConfirmationDialog />

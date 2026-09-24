@@ -45,7 +45,7 @@ class PrismaStockMovementRepository implements StockMovementRepository {
       where: this.buildWhere(filters),
       orderBy: { createdAt: 'desc' },
       include: {
-        product: { select: { id: true, name: true } },
+        product: { select: { id: true, name: true, unit: true } },
         supplier: { select: { id: true, name: true } },
       },
       skip: filters.skip,
@@ -75,7 +75,7 @@ class PrismaStockMovementRepository implements StockMovementRepository {
     return prisma.stockMovement.findMany({
       where: { clientId, ...(type ? { type } : {}) },
       orderBy: { createdAt: 'desc' },
-      include: { product: { select: { id: true, name: true } } },
+      include: { product: { select: { id: true, name: true, unit: true } } },
       skip,
       take: limit,
     })

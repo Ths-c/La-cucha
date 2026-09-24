@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { Pagination } from '@/components/ui/Pagination'
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/states'
-import { formatDate, STATUS_LABELS } from '@/utils'
+import { formatDate, formatQuantity, STATUS_LABELS } from '@/utils'
 
 interface ClientDetailModalProps {
   open: boolean
@@ -56,7 +56,7 @@ export function ClientDetailModal({ open, onClose, clientId }: ClientDetailModal
                           {m.note && <p className="truncate text-xs text-slate-500">{m.note}</p>}
                         </div>
                         <div className="shrink-0 text-right">
-                          <p className="text-sm font-bold text-red-600">−{m.quantity} u.</p>
+                          <p className="text-sm font-bold text-red-600">−{formatQuantity(m.quantity, m.product?.unit ?? 'UNITS')}</p>
                           <p className="text-xs text-slate-400">{formatDate(m.createdAt)}</p>
                         </div>
                       </li>

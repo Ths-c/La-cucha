@@ -46,6 +46,16 @@ describe('StockService.stockIn', () => {
     const { service } = setup(10)
     await expect(service.stockIn(1, { type: 'SALE', quantity: 2 })).rejects.toBeInstanceOf(AppError)
   })
+
+  it('acepta decimales (KG) sin deriva de punto flotante', async () => {
+    const { service, movementRepository } = setup(10)
+    const result = await service.stockIn(1, { type: 'BUY', quantity: 0.1 })
+    expect(result.product.stock).toBe(10.1)
+    expect(movementRepository.create).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ stockBefore: 10, stockAfter: 10.1 }),
+    )
+  })
 })
 
 describe('StockService.stockOut', () => {

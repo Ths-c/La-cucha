@@ -5,6 +5,8 @@ export type SupplierStatus = 'ACTIVE' | 'INACTIVE'
 export type SupplierProductStatus = 'ACTIVE' | 'INACTIVE'
 export type ClientStatus = 'ACTIVE' | 'INACTIVE'
 
+export type ProductUnit = 'UNITS' | 'KG'
+
 export type MovementType =
   | 'BUY'
   | 'SALE'
@@ -58,7 +60,9 @@ export interface Product {
   supplierId: number | null
   stock: number
   stockMin: number
-  unit: 'UNITS' | 'GRAMS'
+  unit: ProductUnit
+  price: number | null
+  promoPrice: number | null
   status: ProductStatus
   imageUrl: string | null
   createdAt: string
@@ -89,7 +93,7 @@ export interface Movement {
   supplierId: number | null
   note: string | null
   createdAt: string
-  product: { id: number; name: string }
+  product: { id: number; name: string; unit?: ProductUnit }
   supplier: SupplierRef | null
 }
 
@@ -128,12 +132,14 @@ export interface LowStockProduct {
   name: string
   stock: number
   stockMin: number
+  unit: ProductUnit
   supplier: SupplierRef | null
 }
 
 export interface TopPurchasedProduct {
   id: number
   name: string
+  unit: ProductUnit
   totalQuantity: number
 }
 
