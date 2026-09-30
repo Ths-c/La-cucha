@@ -1,5 +1,5 @@
 import type { Note } from '@/features/notes/types'
-import { buildWhatsAppUrl } from '@/utils/phone'
+import { buildWhatsAppUrl, normalizeWhatsApp } from '@/utils/phone'
 
 const STORAGE_KEY = 'lacucha:notes'
 
@@ -68,12 +68,25 @@ export function buildWhatsAppMessage(notes: Note[]): string {
 
 export function getConfiguredWhatsAppNumber(): string {
   const stored = localStorage.getItem('lacucha:whatsappNumber')
-  if (stored) return stored
-  return ''
+  if (!stored) return ''
+  // Tolera valores viejos guardados sin normalizar.
+  try {
+    return normalizeWhatsApp(stored)
+  } catch {
+    return stored.trim()
+  }
 }
 
-export function setConfiguredWhatsAppNumber(number: string): void {
-  localStorage.setItem('lacucha:whatsappNumber', number)
+// Guarda el número validado y normalizado (`+<código><número>`).
+// Lanza Error si el valor es inválido. Devuelve el valor guardado.
+export function setConfiguredWhatsAppNumber(number: string): string {
+  const normalized = normalizeWhatsApp(number.trim())
+  localStorage.setItem('lacucha:whatsappNumber', normalized)
+  return normalized
+}
+
+export function clearConfiguredWhatsAppNumber(): void {
+  localStorage.removeItem('lacucha:whatsappNumber')
 }
 
 export function sendNotesViaWhatsApp(notes: Note[]): string | null {

@@ -42,8 +42,11 @@ function shiftToTzMidnight(utcParsed: Date, timezone: string): Date {
 }
 
 function parseOffsetMinutes(offsetToken: string): number {
-  // Formato "GMT-03:00" / "-03:00".
-  const m = offsetToken.match(/([+-])(\d{2})(?::?(\d{2}))?/)
+  // Formatos reales de ICU: "GMT", "GMT-3", "GMT-03", "GMT-03:00", "-03:00", "+05:30".
+  // El regex anterior exigía 2 dígitos de hora y devolvía 0 para "GMT-3"
+  // (Argentina), desplazando el rango del mes 3h y rompiendo "movimientos del mes".
+  if (/^\s*GMT\s*$/i.test(offsetToken)) return 0
+  const m = offsetToken.match(/([+-])(\d{1,2})(?::?(\d{2}))?/)
   if (!m) return 0
   const sign = m[1] === '-' ? -1 : 1
   const hours = Number(m[2])

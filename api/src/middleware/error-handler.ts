@@ -34,11 +34,23 @@ function mapPrismaError(err: Prisma.PrismaClientKnownRequestError): AppError {
 
 export const errorHandler = (
   err: unknown,
-  _req: Request,
+  req: Request,
   res: Response,
   _next: NextFunction,
 ): void => {
+  const route = `${req.method} ${req.originalUrl || req.path}`
+
   if (err instanceof AppError) {
+    // Los 4xx son esperables: log leve con ruta para depurar sin ruido.
+    if (err.status >= 500) {
+      logger.error('error_app', {
+        route,
+        code: err.code,
+        status: err.status,
+        message: err.message,
+        stack: err.stack?.slice(0, 1000),
+      })
+    }
     res.status(err.status).json({
       error: {
         code: err.code,
@@ -50,6 +62,7 @@ export const errorHandler = (
   }
 
   if (err instanceof ZodError) {
+    logger.warn('error_validation', { route, issues: err.issues.length })
     res.status(400).json({
       error: {
         code: ERROR_CODES.VALIDATION_ERROR,
@@ -62,14 +75,39 @@ export const errorHandler = (
 
   if (err instanceof Prisma.PrismaClientKnownRequestError) {
     const mapped = mapPrismaError(err)
-    logger.warn('error_prisma', { code: err.code, message: mapped.message })
+    // P2022 = columna inexistente (drift de migración), P2010 = SQL crudo roto,
+    // P2021 = tabla inexistente. El mensaje recortado es clave para diagnosticar prod.
+    logger.warn('error_prisma', {
+      route,
+      code: err.code,
+      meta: err.meta ?? undefined,
+      detail: err.message.slice(0, 500),
+      mapped: mapped.message,
+    })
     res.status(mapped.status).json({ error: { code: mapped.code, message: mapped.message } })
     return
   }
 
-  // Errores inesperados: se registran, pero el stack nunca llega al cliente.
+  if (err instanceof Prisma.PrismaClientValidationError) {
+    logger.error('error_prisma_validation', {
+      route,
+      detail: err.message.slice(0, 500),
+    })
+    res.status(500).json({
+      error: {
+        code: ERROR_CODES.INTERNAL_ERROR,
+        message: 'Error interno del servidor',
+      },
+    })
+    return
+  }
+
+  // Errores inesperados: se registran con stack, pero el stack nunca llega al cliente.
   logger.error('error_internal', {
-    message: err instanceof Error ? err.message : 'Error desconocido',
+    route,
+    name: err instanceof Error ? err.name : typeof err,
+    message: err instanceof Error ? err.message.slice(0, 500) : 'Error desconocido',
+    stack: err instanceof Error ? err.stack?.slice(0, 1500) : undefined,
   })
   res.status(500).json({
     error: {

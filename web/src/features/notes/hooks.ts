@@ -6,6 +6,9 @@ import {
   updateNote,
   deleteNote,
   generateId,
+  getConfiguredWhatsAppNumber,
+  setConfiguredWhatsAppNumber,
+  clearConfiguredWhatsAppNumber,
 } from '@/utils/notes'
 
 export function useNotes() {
@@ -56,4 +59,23 @@ export function useNotes() {
     removeNote,
     refresh,
   }
+}
+
+// Número de WhatsApp destino del envío de notas (persistido en localStorage).
+// `saveNumber` valida/normaliza y lanza Error si el valor es inválido.
+export function useWhatsAppNumber() {
+  const [number, setNumber] = useState(() => getConfiguredWhatsAppNumber())
+
+  const saveNumber = useCallback((raw: string) => {
+    const normalized = setConfiguredWhatsAppNumber(raw)
+    setNumber(normalized)
+    return normalized
+  }, [])
+
+  const clearNumber = useCallback(() => {
+    clearConfiguredWhatsAppNumber()
+    setNumber('')
+  }, [])
+
+  return { number, saveNumber, clearNumber }
 }

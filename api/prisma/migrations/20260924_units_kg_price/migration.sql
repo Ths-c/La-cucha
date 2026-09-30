@@ -6,20 +6,54 @@
 --    Semántica: en UNITS el precio es por unidad/bolsa; en KG el precio es por kilogramo.
 -- 4. CHECKs de integridad como última barrera (la validación fina vive en Zod).
 
--- ── 1. Enum ──────────────────────────────────────────────────────────────
+-- ── 1. Enum "Unit" ─────────────────────────────────────────────────────
+-- IMPORTANTE / edge cases cubiertos (la migración debe ser noop donde no hay
+-- nada que hacer y funcionar en DBs con historias distintas):
+--   a) Tipo inexistente (DBs creadas antes de la feature, error 42704):
+--      se crea con ambos valores. Obligatorio ANTES del ADD VALUE, porque
+--      `IF NOT EXISTS` cubre el *valor*, no el *tipo*: sin 1a el ADD falla.
+--   b) RENAME GRAMS->KG dentro de DO (admite transacción).
+--   c) ADD VALUE como sentencia plana, FUERA de DO $$ (`ALTER TYPE ... ADD
+--      no puede ejecutarse desde una función, error 25001). Tras 1a el tipo
+--      siempre existe, así que nunca falla con 42704. En PG 12+ (Supabase)
+--      corre dentro de transacción siempre que el valor nuevo no se use en
+--      la misma migración (aquí no se usa: defaults y USING usan 'UNITS').
+--   d) Columna products.unit inexistente (error 42703): se agrega NOT NULL
+--      con DEFAULT 'UNITS' (filas existentes quedan en UNITS/bolsas).
+--   e) Columna products.unit TEXT (DBs creadas a mano según docs/database):
+--      se normaliza (GRAMS->KG, resto/NULL->UNITS) y se convierte al enum.
 DO $$
 BEGIN
-  IF EXISTS (
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'Unit') THEN
+    CREATE TYPE "Unit" AS ENUM ('UNITS', 'KG');
+  ELSIF EXISTS (
     SELECT 1 FROM pg_enum e JOIN pg_type t ON t.oid = e.enumtypid
     WHERE t.typname = 'Unit' AND e.enumlabel = 'GRAMS'
   ) THEN
     ALTER TYPE "Unit" RENAME VALUE 'GRAMS' TO 'KG';
   END IF;
+END
+$$;
+
+ALTER TYPE "Unit" ADD VALUE IF NOT EXISTS 'KG';
+
+DO $$
+BEGIN
   IF NOT EXISTS (
-    SELECT 1 FROM pg_enum e JOIN pg_type t ON t.oid = e.enumtypid
-    WHERE t.typname = 'Unit' AND e.enumlabel = 'KG'
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'products' AND column_name = 'unit'
   ) THEN
-    ALTER TYPE "Unit" ADD VALUE 'KG';
+    ALTER TABLE "products"
+      ADD COLUMN "unit" "Unit" NOT NULL DEFAULT 'UNITS'::"Unit";
+  ELSIF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'products' AND column_name = 'unit' AND data_type = 'text'
+  ) THEN
+    UPDATE products SET unit = 'KG' WHERE unit = 'GRAMS';
+    UPDATE products SET unit = 'UNITS' WHERE unit IS NULL OR unit NOT IN ('UNITS', 'KG');
+    ALTER TABLE "products" ALTER COLUMN "unit" TYPE "Unit" USING "unit"::"Unit";
+    ALTER TABLE "products" ALTER COLUMN "unit" SET DEFAULT 'UNITS'::"Unit";
+    ALTER TABLE "products" ALTER COLUMN "unit" SET NOT NULL;
   END IF;
 END
 $$;

@@ -1,6 +1,12 @@
 import 'dotenv/config'
 
-const stringOr = (name: string, fallback: string): string => process.env[name] ?? fallback
+// Trata "" / "   " como ausente: en Render una var seteada vacía (ej. TIMEZONE)
+// rompía Intl y obligaba al fallback en cada request.
+const stringOr = (name: string, fallback: string): string => {
+  const raw = process.env[name]
+  if (raw == null || raw.trim() === '') return fallback
+  return raw
+}
 
 export const config = {
   env: stringOr('NODE_ENV', 'development'),

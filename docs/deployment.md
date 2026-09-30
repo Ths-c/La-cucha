@@ -40,6 +40,49 @@ por un puerto **directo** de Supabase y empuja las migraciones:
 DATABASE_URL="<prisma url directa>" npx prisma migrate deploy
 ```
 
+> Si `GET /api/dashboard/summary` devuelve `500` tras el deploy de la versión
+> de unidades/KG, es drift de esquema: la migración `20260924_units_kg_price`
+> (enum `Unit`, `stock` a `DOUBLE PRECISION`, `+ unit/price/promoPrice`) no se
+> aplicó en la DB de prod. Verifica con:
+> `SELECT column_name FROM information_schema.columns WHERE table_name='products'`
+> (debe existir `price`) y re-corre el `migrate deploy` con la URL directa.
+> Los logs de Render ahora indican el paso exacto (`dashboard_summary_step_failed`,
+> `error_prisma` con `code` P2022 = columna faltante).
+>
+> ### Baseline: DB que nunca usó Prisma Migrate
+>
+> Si `SELECT to_regclass('_prisma_migrations')` devuelve `null`, la DB se creó
+> antes de usar `migrate` (ej. vía `db push` o a mano). Pasos:
+>
+> 1. Pegar el contenido íntegro de
+>    `api/prisma/migrations/20260924_units_kg_price/migration.sql` en el SQL
+>    editor de Supabase y ejecutarlo (es idempotente; crea el tipo `Unit`,
+>    agrega `unit/price/promoPrice`, convierte a `DOUBLE PRECISION` y crea CHECKs).
+> 2. Registrar el historial a mano (equivale a `migrate resolve --applied`;
+>    DDL exacto del engine Prisma 6):
+>
+> ```sql
+> CREATE TABLE IF NOT EXISTS "_prisma_migrations" (
+>     "id" VARCHAR(36) PRIMARY KEY NOT NULL,
+>     "checksum" VARCHAR(64) NOT NULL,
+>     "finished_at" TIMESTAMPTZ,
+>     "migration_name" VARCHAR(255) NOT NULL,
+>     "logs" TEXT,
+>     "rolled_back_at" TIMESTAMPTZ,
+>     "started_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
+>     "applied_steps_count" INTEGER NOT NULL DEFAULT 0
+> );
+> INSERT INTO "_prisma_migrations"
+>   ("id","checksum","finished_at","migration_name","logs","rolled_back_at","started_at","applied_steps_count")
+> VALUES
+>   (gen_random_uuid()::text,'<sha256 de migration.sql>',now(),'20260924_units_kg_price','',NULL,now(),0);
+> ```
+>
+> ⚠️ El `checksum` es el sha256 del archivo (`sha256sum
+> prisma/migrations/20260924_units_kg_price/migration.sql`) y debe coincidir
+> exacto. **No editar jamás un migration.sql ya aplicado**: cualquier cambio
+> futuro va en una nueva carpeta de migración.
+
 ### DB remota
 
 `DATABASE_URL` apunta al pool de Supabase (ideal para la API). Las migraciones

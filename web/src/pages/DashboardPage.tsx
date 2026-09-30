@@ -4,17 +4,22 @@ import { PageHeader } from '@/components/PageHeader'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
 import { StockBadge } from '@/components/ui/StockBadge'
 import { ErrorState, LoadingState } from '@/components/ui/states'
+import { ApiError } from '@/lib/api/client'
 import { formatQuantity } from '@/utils'
 
 export function DashboardPage() {
-  const { data, isLoading, isError, refetch } = useDashboard()
+  const { data, isLoading, isError, error, refetch } = useDashboard()
+  const errorMessage =
+    error instanceof ApiError
+      ? `No se pudo cargar el dashboard (${error.status} ${error.code}: ${error.message})`
+      : 'No se pudo cargar el dashboard.'
 
   return (
     <div className="space-y-6">
       <PageHeader title="Dashboard" subtitle="Resumen general del negocio" />
 
       {isLoading && <LoadingState message="Cargando resumen..." />}
-      {isError && <ErrorState message="No se pudo cargar el dashboard." onRetry={() => refetch()} />}
+      {isError && <ErrorState message={errorMessage} onRetry={() => refetch()} />}
 
       {data && (
         <>

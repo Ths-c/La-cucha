@@ -4,14 +4,16 @@ import { Button } from '@/components/ui/Button'
 import { PageHeader } from '@/components/PageHeader'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
 import { useToast } from '@/components/ui/Toast'
-import { useNotes } from '@/features/notes/hooks'
+import { useNotes, useWhatsAppNumber } from '@/features/notes/hooks'
 import { NoteForm } from '@/features/notes/NoteForm'
 import { NotesList } from '@/features/notes/NotesList'
-import { sendNotesViaWhatsApp, getConfiguredWhatsAppNumber } from '@/utils/notes'
+import { WhatsAppNumberConfig } from '@/features/notes/WhatsAppNumberConfig'
+import { sendNotesViaWhatsApp } from '@/utils/notes'
 import type { Note } from '@/features/notes/types'
 
 export function NotesPage() {
   const { notes, createNote, editNote, removeNote } = useNotes()
+  const { number: whatsappNumber, saveNumber, clearNumber } = useWhatsAppNumber()
   const { toast } = useToast()
   const [formOpen, setFormOpen] = useState(false)
   const [editingNote, setEditingNote] = useState<Note | null>(null)
@@ -81,17 +83,14 @@ export function NotesPage() {
         <CardHeader
           title="Enviar a WhatsApp"
           subtitle={
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-slate-500">Número: </span>
-              <span className="font-medium text-slate-900">{getConfiguredWhatsAppNumber() || '(no configurado)'}</span>
-            </div>
+            <WhatsAppNumberConfig number={whatsappNumber} onSave={saveNumber} onClear={clearNumber} />
           }
           action={
             <div className="flex items-center gap-2">
               <Button
                 variant="secondary"
                 onClick={handleSendToWhatsApp}
-                disabled={notes.length === 0 || !getConfiguredWhatsAppNumber()}
+                disabled={notes.length === 0 || !whatsappNumber}
               >
                 <WhatsAppIcon className="size-4" />
                 Enviar todas las notas

@@ -1,6 +1,7 @@
 import type { ProductRepository, ProductWithRelations } from '../repositories/product.repository'
 import type { StockMovementRepository } from '../repositories/stock-movement.repository'
 import { getMonthRange } from '../utils/timezone'
+import { logger } from '../utils/logger'
 
 export interface DashboardSummary {
   activeProducts: number
@@ -49,21 +50,28 @@ export class DashboardService {
   constructor(private readonly deps: DashboardServiceDeps) {}
 
   async summary(): Promise<DashboardSummary> {
-    const { start, end } = getMonthRange(this.deps.timezone)
+    const timezone = this.deps.timezone?.trim() || 'America/Argentina/Buenos_Aires'
+    const { start, end } = getMonthRange(timezone)
 
     const [activeProducts, lowStockCount, movementsThisMonth, lowStockIds, topPurchased] =
       await Promise.all([
-        this.deps.productRepository.countByStatus('ACTIVE'),
-        this.deps.productRepository.countLowStock(),
-        this.deps.movementRepository.countInRange(start, end),
-        this.deps.productRepository.listLowStockIds(this.deps.lowStockLimit ?? 5),
-        this.deps.movementRepository.sumQuantitiesByProduct('BUY', this.deps.topPurchasedLimit ?? 5),
+        this.step('countByStatus', () => this.deps.productRepository.countByStatus('ACTIVE')),
+        this.step('countLowStock', () => this.deps.productRepository.countLowStock()),
+        this.step('countInRange', () => this.deps.movementRepository.countInRange(start, end)),
+        this.step('listLowStockIds', () =>
+          this.deps.productRepository.listLowStockIds(this.deps.lowStockLimit ?? 5),
+        ),
+        this.step('sumQuantitiesByProduct', () =>
+          this.deps.movementRepository.sumQuantitiesByProduct('BUY', this.deps.topPurchasedLimit ?? 5),
+        ),
       ])
 
     const [lowStockProducts, lowestStock, topProductsByIds] = await Promise.all([
-      this.fetchLowStockProducts(lowStockIds),
-      this.fetchLowestStock(),
-      this.deps.productRepository.findByIdsWithRelations(topPurchased.map((t) => t.productId)),
+      this.step('fetchLowStockProducts', () => this.fetchLowStockProducts(lowStockIds)),
+      this.step('fetchLowestStock', () => this.fetchLowestStock()),
+      this.step('findTopProducts', () =>
+        this.deps.productRepository.findByIdsWithRelations(topPurchased.map((t) => t.productId)),
+      ),
     ])
 
     return {
@@ -77,6 +85,23 @@ export class DashboardService {
           const product = topProductsByIds.find((p) => p.id === t.productId)
           return { id: t.productId, name: product?.name ?? 'Producto', unit: (product?.unit ?? 'UNITS') as 'UNITS' | 'KG', totalQuantity: t.totalQuantity }
         }),
+    }
+  }
+
+  // Envuelve cada sub-query para saber cuál rompe el /summary en los logs
+  // de Render (antes el Promise.all fallaba sin decir qué paso falló).
+  private async step<T>(name: string, fn: () => Promise<T>): Promise<T> {
+    try {
+      return await fn()
+    } catch (err) {
+      logger.error('dashboard_summary_step_failed', {
+        step: name,
+        name_: err instanceof Error ? err.name : typeof err,
+        message: err instanceof Error ? err.message.slice(0, 500) : String(err).slice(0, 500),
+        code: (err as { code?: unknown })?.code ?? undefined,
+        meta: (err as { meta?: unknown })?.meta ?? undefined,
+      })
+      throw err
     }
   }
 
