@@ -11,10 +11,18 @@ const quantitySchema = z.coerce
   .max(1_000_000, 'La cantidad es demasiado grande')
   .refine((v) => Math.abs(v * 1000 - Math.round(v * 1000)) < 1e-6, 'Máximo 3 decimales')
 
+// `null` (front) y `''` (select sin elegir) se tratan como ausente.
+const optionalIdField = z.preprocess((v) => (v === null || v === '' ? undefined : v), idSchema.optional())
+
+const optionalNoteField = z.preprocess(
+  (v) => (v === null || v === '' ? undefined : v),
+  longTextSchema,
+)
+
 const baseMovementSchema = {
   quantity: quantitySchema,
-  supplierId: idSchema.optional(),
-  note: longTextSchema,
+  supplierId: optionalIdField,
+  note: optionalNoteField,
 }
 
 // Entrada: solo tipos que incrementan stock.
@@ -44,7 +52,7 @@ export const stockOutSchema = z
     ),
     quantity: baseMovementSchema.quantity,
     supplierId: baseMovementSchema.supplierId,
-    clientId: idSchema.optional(),
+    clientId: optionalIdField,
     note: baseMovementSchema.note,
   })
   .strict()

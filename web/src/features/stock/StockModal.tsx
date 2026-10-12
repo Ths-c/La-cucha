@@ -97,7 +97,12 @@ export function StockModal({
         const input = values as StockInFormValues
         await stockIn.mutateAsync({
           id: productId,
-          input: { type: input.type, quantity: Number(input.quantity), supplierId: input.supplierId ?? null, note: input.note ?? undefined },
+          input: {
+            type: input.type,
+            quantity: Number(input.quantity),
+            ...(input.supplierId ? { supplierId: Number(input.supplierId) } : {}),
+            ...(input.note?.trim() ? { note: input.note.trim() } : {}),
+          },
         })
         toast.success(`Entrada registrada (${formatQuantity(Number(input.quantity), productUnit)})`)
       } else {
@@ -107,8 +112,8 @@ export function StockModal({
           input: {
             type: input.type,
             quantity: Number(input.quantity),
-            clientId: isSale ? input.clientId ?? null : null,
-            note: input.note ?? undefined,
+            ...(isSale && input.clientId ? { clientId: Number(input.clientId) } : {}),
+            ...(input.note?.trim() ? { note: input.note.trim() } : {}),
           },
         })
         toast.success(`Salida registrada (${formatQuantity(Number(input.quantity), productUnit)})`)

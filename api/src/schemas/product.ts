@@ -39,7 +39,7 @@ export const createProductSchema = z
   .object({
     name: shortTextSchema,
     categoryId: idSchema,
-    supplierId: idSchema.optional(),
+    supplierId: z.preprocess((v) => (v === null || v === '' ? undefined : v), idSchema.optional()),
     stock: stockAmountSchema('El stock inicial no puede ser negativo').default(0),
     stockMin: stockAmountSchema('El stock mínimo no puede ser negativo').default(0),
     unit: unitSchema.default('UNITS'),
@@ -54,7 +54,7 @@ export const updateProductSchema = z
   .object({
     name: shortTextSchema.optional(),
     categoryId: idSchema.optional(),
-    supplierId: idSchema.nullable().optional(),
+    supplierId: z.preprocess((v) => (v === '' ? undefined : v), idSchema.nullable().optional()),
     stockMin: stockAmountSchema('El stock mínimo no puede ser negativo').optional(),
     status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
     unit: unitSchema.optional(),

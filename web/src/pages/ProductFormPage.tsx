@@ -104,7 +104,7 @@ export function ProductFormPage() {
         const created = await createMutation.mutateAsync({
           name: values.name,
           categoryId: Number(values.categoryId),
-          supplierId: values.supplierId ?? null,
+          ...(values.supplierId ? { supplierId: Number(values.supplierId) } : {}),
           stock: Number(values.stock ?? 0),
           stockMin: Number(values.stockMin ?? 0),
           unit: values.unit,
