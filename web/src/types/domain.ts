@@ -7,6 +7,8 @@ export type ClientStatus = 'ACTIVE' | 'INACTIVE'
 
 export type ProductUnit = 'UNITS' | 'KG'
 
+export type PriceType = 'KILO' | 'BAG'
+
 export type MovementType =
   | 'BUY'
   | 'SALE'
@@ -62,7 +64,7 @@ export interface Product {
   stockMin: number
   unit: ProductUnit
   price: number | null
-  promoPrice: number | null
+  bagPrice: number | null
   status: ProductStatus
   imageUrl: string | null
   createdAt: string
@@ -91,6 +93,7 @@ export interface Movement {
   stockBefore: number
   stockAfter: number
   supplierId: number | null
+  priceType: PriceType | null
   note: string | null
   createdAt: string
   product: { id: number; name: string; unit?: ProductUnit }
@@ -113,6 +116,7 @@ export interface StockAdjustmentResult {
     quantity: number
     previousStock: number
     resultingStock: number
+    priceType: PriceType | null
     note: string | null
     createdAt: string
   }

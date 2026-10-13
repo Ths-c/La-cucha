@@ -33,13 +33,13 @@ function setup() {
 describe('ProductService.create', () => {
   it('registra stock inicial como movimiento BUY', async () => {
     const { service, stockService } = setup()
-    await service.create({ name: 'Arena', categoryId: 1, stock: 5 })
+    await service.create({ name: 'Arena', categoryId: 1, stock: 5, price: 1000 })
     expect(stockService.stockIn).toHaveBeenCalledWith(1, { type: 'BUY', quantity: 5, note: 'Stock inicial' })
   })
 
   it('no registra movimiento si el stock inicial es 0', async () => {
     const { service, stockService } = setup()
-    await service.create({ name: 'Juguete', categoryId: 1, stock: 0 })
+    await service.create({ name: 'Juguete', categoryId: 1, stock: 0, price: 1000 })
     expect(stockService.stockIn).not.toHaveBeenCalled()
   })
 
@@ -59,31 +59,31 @@ describe('ProductService.trash', () => {
 })
 
 describe('ProductService unidad y precio', () => {
-  it('guarda unidad KG, precio y oferta al crear', async () => {
+  it('guarda unidad KG, precio por kilo y por bolsa al crear', async () => {
     const { service, productRepository } = setup()
-    await service.create({ name: 'Suelto', categoryId: 1, stock: 2.5, unit: 'KG', price: 8500, promoPrice: 7999 })
+    await service.create({ name: 'Suelto', categoryId: 1, stock: 2.5, unit: 'KG', price: 8500, bagPrice: 79999 })
     expect(productRepository.create).toHaveBeenCalledWith(
-      expect.objectContaining({ unit: 'KG', price: 8500, promoPrice: 7999 }),
+      expect.objectContaining({ unit: 'KG', price: 8500, bagPrice: 79999 }),
     )
   })
 
-  it('persiste el cambio de unidad y precio al actualizar', async () => {
+  it('persiste el cambio de unidad y precios al actualizar', async () => {
     const { service, productRepository } = setup()
     productRepository.findById.mockResolvedValueOnce({
-      id: 1, name: 'Suelto', categoryId: 1, price: 8500, promoPrice: null,
+      id: 1, name: 'Suelto', categoryId: 1, price: 8500, bagPrice: null,
     })
-    await service.update(1, { unit: 'KG', price: 9000 })
+    await service.update(1, { unit: 'KG', price: 9000, bagPrice: 80000 })
     expect(productRepository.update).toHaveBeenCalledWith(
       1,
-      expect.objectContaining({ unit: 'KG', price: 9000 }),
+      expect.objectContaining({ unit: 'KG', price: 9000, bagPrice: 80000 }),
     )
   })
 
-  it('rechaza oferta mayor al precio guardado aunque el PATCH no traiga price', async () => {
+  it('rechaza quitar ambos precios aunque el PATCH traiga solo uno en null', async () => {
     const { service, productRepository } = setup()
     productRepository.findById.mockResolvedValueOnce({
-      id: 1, name: 'X', categoryId: 1, price: 100, promoPrice: null,
+      id: 1, name: 'X', categoryId: 1, price: 100, bagPrice: null,
     })
-    await expect(service.update(1, { promoPrice: 150 })).rejects.toBeInstanceOf(AppError)
+    await expect(service.update(1, { price: null })).rejects.toBeInstanceOf(AppError)
   })
 })

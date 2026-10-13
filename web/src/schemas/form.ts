@@ -39,7 +39,7 @@ export const createProductFormSchema = z
     stockMin: nonNegative('El stock mínimo no puede ser negativo').default(0),
     unit: z.enum(['UNITS', 'KG']).default('UNITS'),
     price: optionalPrice,
-    promoPrice: optionalPrice,
+    bagPrice: optionalPrice,
     imageUrl: z
       .string()
       .trim()
@@ -49,8 +49,8 @@ export const createProductFormSchema = z
       .or(z.literal('')),
   })
   .superRefine((data, ctx) => {
-    if (data.price != null && data.promoPrice != null && data.promoPrice > data.price) {
-      ctx.addIssue({ code: 'custom', path: ['promoPrice'], message: 'La oferta no puede ser mayor al precio normal' })
+    if (data.price == null && data.bagPrice == null) {
+      ctx.addIssue({ code: 'custom', path: ['price'], message: 'Cargá al menos un precio (por kilo o por bolsa)' })
     }
   })
 export type CreateProductFormValues = z.infer<typeof createProductFormSchema>
@@ -63,7 +63,7 @@ export const updateProductFormSchema = z
     stockMin: nonNegative('El stock mínimo no puede ser negativo').default(0),
     unit: z.enum(['UNITS', 'KG']).optional(),
     price: optionalPrice,
-    promoPrice: optionalPrice,
+    bagPrice: optionalPrice,
     imageUrl: z
       .string()
       .trim()
@@ -73,8 +73,8 @@ export const updateProductFormSchema = z
       .or(z.literal('')),
   })
   .superRefine((data, ctx) => {
-    if (data.price != null && data.promoPrice != null && data.promoPrice > data.price) {
-      ctx.addIssue({ code: 'custom', path: ['promoPrice'], message: 'La oferta no puede ser mayor al precio normal' })
+    if (data.price == null && data.bagPrice == null) {
+      ctx.addIssue({ code: 'custom', path: ['price'], message: 'Cargá al menos un precio (por kilo o por bolsa)' })
     }
   })
 export type UpdateProductFormValues = z.infer<typeof updateProductFormSchema>
@@ -122,10 +122,20 @@ const stockOutType = z.enum(
   { message: 'Tipo inválido' },
 )
 
-export const stockOutFormSchema = z.object({
-  type: stockOutType,
-  quantity: positiveAmount('La cantidad debe ser mayor a 0'),
-  clientId: optionalId.nullable().optional(),
-  note: z.string().trim().max(1000).optional().nullable(),
-})
+export const stockOutFormSchema = z
+  .object({
+    type: stockOutType,
+    quantity: positiveAmount('La cantidad debe ser mayor a 0'),
+    clientId: optionalId.nullable().optional(),
+    priceType: z.enum(['KILO', 'BAG'], { message: 'Elegí el precio de venta' }).optional(),
+    note: z.string().trim().max(1000).optional().nullable(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.type === 'SALE' && data.priceType == null) {
+      ctx.addIssue({ code: 'custom', path: ['priceType'], message: 'Elegí el precio de venta (por kilo o por bolsa)' })
+    }
+    if (data.type !== 'SALE' && data.priceType != null) {
+      ctx.addIssue({ code: 'custom', path: ['priceType'], message: 'El precio de venta solo corresponde a ventas' })
+    }
+  })
 export type StockOutFormValues = z.infer<typeof stockOutFormSchema>

@@ -24,13 +24,14 @@ const optionalPriceSchema = (message: string) =>
 
 const unitSchema = z.enum(['UNITS', 'KG'])
 
-// La oferta no puede superar al precio normal cuando ambos están definidos.
-function promoLtePrice<T extends { price?: number | null; promoPrice?: number | null }>(data: T, ctx: z.RefinementCtx) {
-  if (data.price != null && data.promoPrice != null && data.promoPrice > data.price) {
+// Cada producto puede tener precio por kilo y/o precio por bolsa.
+// Son independientes (ninguno tapa al otro) pero se exige al menos uno.
+function atLeastOnePrice<T extends { price?: number | null; bagPrice?: number | null }>(data: T, ctx: z.RefinementCtx) {
+  if (data.price == null && data.bagPrice == null) {
     ctx.addIssue({
       code: 'custom',
-      path: ['promoPrice'],
-      message: 'La oferta no puede ser mayor al precio normal',
+      path: ['price'],
+      message: 'Cargá al menos un precio (por kilo o por bolsa)',
     })
   }
 }
@@ -44,11 +45,11 @@ export const createProductSchema = z
     stockMin: stockAmountSchema('El stock mínimo no puede ser negativo').default(0),
     unit: unitSchema.default('UNITS'),
     price: optionalPriceSchema('El precio no puede ser negativo'),
-    promoPrice: optionalPriceSchema('La oferta no puede ser negativa'),
+    bagPrice: optionalPriceSchema('El precio por bolsa no puede ser negativo'),
     imageUrl: z.string().url('La URL de la imagen no es válida').max(500).optional().or(z.literal('')),
   })
   .strict()
-  .superRefine(promoLtePrice)
+  .superRefine(atLeastOnePrice)
 
 export const updateProductSchema = z
   .object({
@@ -59,11 +60,17 @@ export const updateProductSchema = z
     status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
     unit: unitSchema.optional(),
     price: optionalPriceSchema('El precio no puede ser negativo'),
-    promoPrice: optionalPriceSchema('La oferta no puede ser negativa'),
+    bagPrice: optionalPriceSchema('El precio por bolsa no puede ser negativo'),
     imageUrl: z.string().url('La URL de la imagen no es válida').max(500).optional().nullable().or(z.literal('')),
   })
   .strict()
-  .superRefine(promoLtePrice)
+  .superRefine((data, ctx) => {
+    // En PATCH los campos son opcionales: solo validar "al menos uno"
+    // cuando el payload trae explícitamente alguno de los dos precios.
+    if (data.price !== undefined || data.bagPrice !== undefined) {
+      atLeastOnePrice(data, ctx)
+    }
+  })
 
 export const productListQuerySchema = z
   .object({

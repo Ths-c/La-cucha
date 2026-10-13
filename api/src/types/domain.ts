@@ -1,6 +1,6 @@
 // Tipos de dominio compartidos (independientes de Prisma/exigidos por el negocio).
 
-import type { MovementType } from '@prisma/client'
+import type { MovementType, PriceType } from '@prisma/client'
 
 // Dirección de un movimiento de stock.
 export type StockDirection = 'in' | 'out'
@@ -19,6 +19,7 @@ export interface StockAdjustmentResult {
     quantity: number
     previousStock: number
     resultingStock: number
+    priceType: PriceType | null
     note: string | null
     createdAt: Date
   }

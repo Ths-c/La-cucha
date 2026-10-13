@@ -38,6 +38,9 @@ export const stockInSchema = z
   .strict()
 
 // Salida: solo tipos que reducen stock.
+// En ventas (SALE) es obligatorio indicar con cuál precio se vendió
+// (KILO = precio por kilo, BAG = precio por bolsa); en el resto de
+// movimientos el campo no corresponde.
 export const stockOutSchema = z
   .object({
     type: movementTypeLiteral().refine(
@@ -53,9 +56,26 @@ export const stockOutSchema = z
     quantity: baseMovementSchema.quantity,
     supplierId: baseMovementSchema.supplierId,
     clientId: optionalIdField,
+    priceType: z.enum(['KILO', 'BAG']).optional(),
     note: baseMovementSchema.note,
   })
   .strict()
+  .superRefine((data, ctx) => {
+    if (data.type === 'SALE' && data.priceType == null) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['priceType'],
+        message: 'Indicá el precio de venta (por kilo o por bolsa)',
+      })
+    }
+    if (data.type !== 'SALE' && data.priceType != null) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['priceType'],
+        message: 'El precio de venta solo corresponde a ventas',
+      })
+    }
+  })
 
 export type StockInInput = z.infer<typeof stockInSchema>
 export type StockOutInput = z.infer<typeof stockOutSchema>

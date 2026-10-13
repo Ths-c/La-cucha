@@ -14,13 +14,13 @@ describe('validate middleware', () => {
     const next = vi.fn()
 
     handler(
-      { body: { name: 'Arena', categoryId: 1, stock: '5' }, params: {}, query: {} } as unknown as Request,
+      { body: { name: 'Arena', categoryId: 1, stock: '5', price: 1000 }, params: {}, query: {} } as unknown as Request,
       res,
       next,
     )
 
     expect(next).toHaveBeenCalledWith()
-    expect(res.locals.validated?.body).toEqual({ name: 'Arena', categoryId: 1, stock: 5, stockMin: 0, unit: 'UNITS' })
+    expect(res.locals.validated?.body).toEqual({ name: 'Arena', categoryId: 1, stock: 5, stockMin: 0, unit: 'UNITS', price: 1000 })
   })
 
   it('pasa el error a next cuando la validación falla', () => {
@@ -40,29 +40,29 @@ describe('validate middleware', () => {
     expect(next).toHaveBeenCalledWith(expect.any(Error))
   })
 
-  it('acepta KG con decimales, precio y oferta', () => {
+  it('acepta KG con decimales, precio por kilo y por bolsa', () => {
     const handler = validate({ body: createProductSchema })
     const res = mockRes()
     const next = vi.fn()
 
     handler(
-      { body: { name: 'Suelto', categoryId: 1, stock: '2.5', unit: 'KG', price: '8500', promoPrice: 7999 }, params: {}, query: {} } as unknown as Request,
+      { body: { name: 'Suelto', categoryId: 1, stock: '2.5', unit: 'KG', price: '8500', bagPrice: 79999 }, params: {}, query: {} } as unknown as Request,
       res,
       next,
     )
 
     expect(next).toHaveBeenCalledWith()
     expect(res.locals.validated?.body).toEqual(
-      expect.objectContaining({ stock: 2.5, unit: 'KG', price: 8500, promoPrice: 7999 }),
+      expect.objectContaining({ stock: 2.5, unit: 'KG', price: 8500, bagPrice: 79999 }),
     )
   })
 
-  it('rechaza oferta mayor al precio normal', () => {
+  it('rechaza crear sin ningún precio', () => {
     const handler = validate({ body: createProductSchema })
     const res = mockRes()
     const next = vi.fn()
     handler(
-      { body: { name: 'X', categoryId: 1, price: 100, promoPrice: 150 }, params: {}, query: {} } as unknown as Request,
+      { body: { name: 'X', categoryId: 1 }, params: {}, query: {} } as unknown as Request,
       res,
       next,
     )

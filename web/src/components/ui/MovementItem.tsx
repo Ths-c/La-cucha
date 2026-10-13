@@ -1,6 +1,6 @@
 import { Badge } from '@/components/ui/Badge'
-import { MOVEMENT_LABELS, MOVEMENT_SIGN, formatDateTime, formatQuantity } from '@/utils'
-import type { ProductUnit } from '@/types/domain'
+import { MOVEMENT_LABELS, MOVEMENT_SIGN, PRICE_TYPE_LABELS, formatDateTime, formatQuantity } from '@/utils'
+import type { PriceType, ProductUnit } from '@/types/domain'
 
 interface MovementRow {
   type: string
@@ -8,6 +8,7 @@ interface MovementRow {
   stockBefore: number
   stockAfter: number
   supplier: { id: number; name: string } | null
+  priceType?: PriceType | null
   note: string | null
   createdAt: string
 }
@@ -30,6 +31,9 @@ export function MovementItem({ m, unit = 'UNITS' }: { m: MovementRow; unit?: Pro
       <div className="min-w-0">
         <div className="flex items-center gap-2">
           <Badge tone={typeTone[m.type] ?? 'slate'}>{MOVEMENT_LABELS[m.type]}</Badge>
+          {m.priceType && (
+            <Badge tone="slate">{PRICE_TYPE_LABELS[m.priceType] ?? m.priceType}</Badge>
+          )}
           <span
             className={`text-sm font-bold ${isOut ? 'text-red-600' : 'text-emerald-700'}`}
           >

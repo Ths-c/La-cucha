@@ -54,14 +54,12 @@ export function ProductFormPage() {
       stockMin: 0,
       unit: 'UNITS',
       price: undefined,
-      promoPrice: undefined,
+      bagPrice: undefined,
       imageUrl: '',
     },
   })
 
   const unitValue = watch('unit') ?? 'UNITS'
-  const priceHint =
-    unitValue === 'KG' ? 'Precio por kilogramo. Opcional.' : 'Precio por unidad / bolsa. Opcional.'
 
   useEffect(() => {
     if (isEdit && product) {
@@ -72,7 +70,7 @@ export function ProductFormPage() {
         stockMin: product.stockMin,
         unit: product.unit,
         price: product.price ?? undefined,
-        promoPrice: product.promoPrice ?? undefined,
+        bagPrice: product.bagPrice ?? undefined,
         imageUrl: product.imageUrl ?? '',
       })
     }
@@ -94,7 +92,7 @@ export function ProductFormPage() {
             stockMin: Number(values.stockMin ?? 0),
             unit: values.unit,
             price: values.price ?? null,
-            promoPrice: values.promoPrice ?? null,
+            bagPrice: values.bagPrice ?? null,
             imageUrl: values.imageUrl?.trim() || null,
           },
         })
@@ -109,7 +107,7 @@ export function ProductFormPage() {
           stockMin: Number(values.stockMin ?? 0),
           unit: values.unit,
           price: values.price ?? undefined,
-          promoPrice: values.promoPrice ?? undefined,
+          bagPrice: values.bagPrice ?? undefined,
           imageUrl: values.imageUrl?.trim() || undefined,
         })
         toast.success('Producto creado')
@@ -191,25 +189,25 @@ export function ProductFormPage() {
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <Input
                   id="price"
-                  label="Precio"
+                  label="Precio por kilo"
                   type="number"
                   min={0}
                   step="0.01"
                   placeholder="0.00"
-                  hint={priceHint}
+                  hint="Opcional, pero cargá al menos un precio."
                   {...register('price')}
                   error={errors.price?.message}
                 />
                 <Input
-                  id="promoPrice"
-                  label="Precio oferta"
+                  id="bagPrice"
+                  label="Precio por bolsa"
                   type="number"
                   min={0}
                   step="0.01"
                   placeholder="Opcional"
-                  hint="Debe ser menor o igual al precio normal."
-                  {...register('promoPrice')}
-                  error={errors.promoPrice?.message}
+                  hint="Opcional, pero cargá al menos un precio."
+                  {...register('bagPrice')}
+                  error={errors.bagPrice?.message}
                 />
               </div>
               <Input

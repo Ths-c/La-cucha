@@ -45,6 +45,11 @@ enum Unit {
   KG
 }
 
+enum PriceType {
+  KILO
+  BAG
+}
+
 // ── Categorías ───────────────────────────────────────────────────────────
 
 model Category {
@@ -90,7 +95,7 @@ model Product {
   stockMin   Float             @default(0)
   unit       Unit              @default(UNITS)
   price      Float?
-  promoPrice Float?
+  bagPrice   Float?
   status     ProductStatus   @default(ACTIVE)
   imageUrl   String?
   movements  StockMovement[]
@@ -156,6 +161,7 @@ model StockMovement {
   supplier    Supplier?    @relation(fields: [supplierId], references: [id])
   clientId    Int?
   client      Client?      @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  priceType   PriceType?
   note        String?
 
   createdAt DateTime @default(now())

@@ -6,7 +6,7 @@ import type { StockMovementRepository } from '../src/repositories/stock-movement
 
 function setup(stock: number, status: 'ACTIVE' | 'INACTIVE' = 'ACTIVE') {
   const productRepository = {
-    readForUpdate: vi.fn(async () => ({ id: 1, name: 'Dog Chow', stock, stockMin: 5, status })),
+    readForUpdate: vi.fn(async () => ({ id: 1, name: 'Dog Chow', stock, stockMin: 5, status, price: 8500, bagPrice: 79999 })),
     incrementStock: vi.fn(async () => true),
     decrementStock: vi.fn(async () => true),
   } as unknown as ProductRepository
@@ -61,13 +61,26 @@ describe('StockService.stockIn', () => {
 describe('StockService.stockOut', () => {
   it('rechaza salida cuando no hay stock suficiente', async () => {
     const { service } = setup(2)
-    await expect(service.stockOut(1, { type: 'SALE', quantity: 5 })).rejects.toMatchObject({ code: 'INSUFFICIENT_STOCK' })
+    await expect(service.stockOut(1, { type: 'SALE', quantity: 5, priceType: 'KILO' })).rejects.toMatchObject({ code: 'INSUFFICIENT_STOCK' })
   })
 
   it('registra salida correctamente cuando hay stock', async () => {
     const { service, movementRepository } = setup(10)
-    await service.stockOut(1, { type: 'SALE', quantity: 4 })
-    expect(movementRepository.create).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ stockAfter: 6 }))
+    await service.stockOut(1, { type: 'SALE', quantity: 4, priceType: 'BAG' })
+    expect(movementRepository.create).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ stockAfter: 6, priceType: 'BAG' }))
+  })
+
+  it('rechaza venta sin precio de venta', async () => {
+    const { service } = setup(10)
+    await expect(service.stockOut(1, { type: 'SALE', quantity: 1 })).rejects.toMatchObject({ code: 'VALIDATION_ERROR' })
+  })
+
+  it('rechaza venta por bolsa si el producto no tiene ese precio', async () => {
+    const { service, productRepository } = setup(10)
+    ;(productRepository.readForUpdate as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      id: 1, name: 'X', stock: 10, stockMin: 0, status: 'ACTIVE', price: 100, bagPrice: null,
+    })
+    await expect(service.stockOut(1, { type: 'SALE', quantity: 1, priceType: 'BAG' })).rejects.toMatchObject({ code: 'VALIDATION_ERROR' })
   })
 
   it('rechaza el uso de producto inactivo', async () => {
@@ -82,7 +95,7 @@ describe('StockService concurrencia (race conditions)', () => {
   // pueda consumir el stock restante y que NUNCA quede stock negativo.
   it('no permite que dos salidas dejen el stock en negativo', async () => {
     const productRepository = {
-      readForUpdate: vi.fn(async () => ({ id: 1, name: 'Dog Chow', stock: 5, stockMin: 0, status: 'ACTIVE' })),
+      readForUpdate: vi.fn(async () => ({ id: 1, name: 'Dog Chow', stock: 5, stockMin: 0, status: 'ACTIVE', price: 100, bagPrice: 1000 })),
       incrementStock: vi.fn(async () => true),
       // Respuesta racing: la primera salida consume el stock (ok), la segunda no.
       decrementStock: vi
@@ -104,8 +117,8 @@ describe('StockService concurrencia (race conditions)', () => {
     })
 
     const [first, second] = await Promise.allSettled([
-      service.stockOut(1, { type: 'SALE', quantity: 5 }),
-      service.stockOut(1, { type: 'SALE', quantity: 5 }),
+      service.stockOut(1, { type: 'SALE', quantity: 5, priceType: 'KILO' }),
+      service.stockOut(1, { type: 'SALE', quantity: 5, priceType: 'KILO' }),
     ])
 
     // El segundo intento debe fallar por stock insuficiente.

@@ -10,6 +10,7 @@ import type {
   OrderItemInput,
   OrderPreview,
   Paginated,
+  PriceType,
   Product,
   ProductListParams,
   ProductUnit,
@@ -29,7 +30,7 @@ export interface CreateProductInput {
   stockMin?: number
   unit?: ProductUnit
   price?: number | null
-  promoPrice?: number | null
+  bagPrice?: number | null
   imageUrl?: string
 }
 
@@ -41,7 +42,7 @@ export interface UpdateProductInput {
   status?: 'ACTIVE' | 'INACTIVE'
   unit?: ProductUnit
   price?: number | null
-  promoPrice?: number | null
+  bagPrice?: number | null
   imageUrl?: string | null
 }
 
@@ -57,6 +58,7 @@ export interface StockOutInput {
   quantity: number
   supplierId?: number | null
   clientId?: number | null
+  priceType?: PriceType | null
   note?: string
 }
 

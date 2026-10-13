@@ -38,8 +38,8 @@ erDiagram
         float stock ">= 0, hasta 3 decimales"
         float stockMin ">= 0, hasta 3 decimales"
         unit unit "UNITS|KG"
-        float price "nullable, por unidad o por kg"
-        float promoPrice "nullable, <= price"
+        float price "nullable, precio por kilo"
+        float bagPrice "nullable, precio por bolsa"
         productStatus status
         string imageUrl "nullable"
         datetime createdAt
@@ -63,6 +63,8 @@ erDiagram
         float stockBefore
         float stockAfter
         int supplierId FK "opcional"
+        int clientId FK "opcional"
+        priceType priceType "KILO|BAG, solo en SALE"
         string note
         datetime createdAt
     }
@@ -108,7 +110,8 @@ lo soporte en schema.
 
 - `ProductStatus`: `ACTIVE | INACTIVE`
 - `SupplierStatus`: `ACTIVE | INACTIVE`
-- `Unit`: `UNITS` (por unidad/bolsa, precio por unidad) | `KG` (suelto, precio por kilogramo)
+- `Unit`: `UNITS` (stock por unidad/bolsa) | `KG` (suelto)
+- `PriceType`: `KILO` (precio por kilo) | `BAG` (precio por bolsa) — solo en ventas `SALE`
 - `MovementType`: `BUY | SALE | BREAKAGE | EXPIRY | DONATION | INTERNAL_CONSUMPTION | MANUAL_ADJUST`
 
 ## 4. Restricciones de integridad
@@ -118,8 +121,7 @@ SQL**:
 
 - `Product.stock >= 0`  → impide stock negativo a nivel base de datos.
 - `Product.stockMin >= 0`
-- `Product.price >= 0` (nullable) y `Product.promoPrice >= 0` (nullable)
-- `Product.promoPrice <= Product.price` cuando ambos están definidos
+- `Product.price >= 0` (nullable, precio por kilo) y `Product.bagPrice >= 0` (nullable, precio por bolsa); al menos uno obligatorio (validado en backend)
 - `StockMovement.quantity > 0`
 - Nombres `NOT NULL` y normalizados (sin espacios redundantes).
 - `Supplier.whatsappNumber NOT NULL`, formato normalizado `+<código><número>`.

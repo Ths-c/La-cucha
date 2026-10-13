@@ -32,7 +32,7 @@ export interface ProductRepository {
   listLowStockIds(limit?: number): Promise<number[]>
   countLowStock(): Promise<number>
   countByStatus(status: ProductStatus): Promise<number>
-  readForUpdate(tx: Tx, id: number): Promise<{ id: number; name: string; stock: number; stockMin: number; status: ProductStatus } | null>
+  readForUpdate(tx: Tx, id: number): Promise<{ id: number; name: string; stock: number; stockMin: number; status: ProductStatus; price: number | null; bagPrice: number | null } | null>
   readStock(tx: Tx, id: number): Promise<number | null>
   incrementStock(tx: Tx, id: number, quantity: number): Promise<boolean>
   decrementStock(tx: Tx, id: number, quantity: number): Promise<boolean>
@@ -105,10 +105,10 @@ class PrismaProductRepository implements ProductRepository {
   async readForUpdate(
     tx: Tx,
     id: number,
-  ): Promise<{ id: number; name: string; stock: number; stockMin: number; status: ProductStatus } | null> {
+  ): Promise<{ id: number; name: string; stock: number; stockMin: number; status: ProductStatus; price: number | null; bagPrice: number | null } | null> {
     const rows = await tx.$queryRaw<
-      { id: number; name: string; stock: number; stockMin: number; status: string }[]
-    >`SELECT id, name, stock, "stockMin", status::text FROM products WHERE id = ${id} FOR UPDATE`
+      { id: number; name: string; stock: number; stockMin: number; status: string; price: number | null; bagPrice: number | null }[]
+    >`SELECT id, name, stock, "stockMin", status::text, price, "bagPrice" FROM products WHERE id = ${id} FOR UPDATE`
     const row = rows[0]
     if (!row) return null
     return {
@@ -117,6 +117,8 @@ class PrismaProductRepository implements ProductRepository {
       stock: row.stock,
       stockMin: row.stockMin,
       status: row.status as ProductStatus,
+      price: row.price,
+      bagPrice: row.bagPrice,
     }
   }
 

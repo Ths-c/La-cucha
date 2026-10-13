@@ -1,29 +1,27 @@
-import { formatPrice, isOnPromo, pricePerLabel } from '@/utils'
-import type { ProductUnit } from '@/types/domain'
+import { formatPrice } from '@/utils'
 
 interface PriceTagProps {
   price: number | null
-  promoPrice?: number | null
-  unit?: ProductUnit
-  showPer?: boolean
+  bagPrice?: number | null
 }
 
-/** Muestra el precio normal y, si hay oferta vigente, el precio promocional. */
-export function PriceTag({ price, promoPrice = null, unit = 'UNITS', showPer = false }: PriceTagProps) {
-  if (price == null) return <span className="text-sm text-slate-400">Sin precio</span>
-  if (isOnPromo(price, promoPrice)) {
-    return (
-      <span className="text-sm">
-        <span className="mr-1.5 text-slate-400 line-through">{formatPrice(price)}</span>
-        <span className="font-bold text-red-600">{formatPrice(promoPrice)}</span>
-        {showPer && <span className="ml-1 text-xs font-normal text-slate-500">{pricePerLabel(unit)}</span>}
-      </span>
-    )
+/** Muestra ambos precios sin que uno tape al otro: por kilo y por bolsa. */
+export function PriceTag({ price, bagPrice = null }: PriceTagProps) {
+  if (price == null && bagPrice == null) {
+    return <span className="text-sm text-slate-400">Sin precio</span>
   }
   return (
-    <span className="text-sm font-semibold text-slate-800">
-      {formatPrice(price)}
-      {showPer && <span className="ml-1 text-xs font-normal text-slate-500">{pricePerLabel(unit)}</span>}
+    <span className="flex flex-col gap-0.5 text-sm">
+      {price != null && (
+        <span className="font-semibold text-slate-800">
+          {formatPrice(price)} <span className="text-xs font-normal text-slate-500">/ kilo</span>
+        </span>
+      )}
+      {bagPrice != null && (
+        <span className="font-semibold text-slate-800">
+          {formatPrice(bagPrice)} <span className="text-xs font-normal text-slate-500">/ bolsa</span>
+        </span>
+      )}
     </span>
   )
 }

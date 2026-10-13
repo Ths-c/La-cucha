@@ -111,8 +111,8 @@ export function ProductDetailPage() {
               <InfoRow label="Proveedor" value={product.supplier?.name ?? '—'} />
               <InfoRow label="Unidad" value={UNIT_LABELS[product.unit]} />
               <InfoRow
-                label="Precio"
-                value={<PriceTag price={product.price} promoPrice={product.promoPrice} unit={product.unit} showPer />}
+                label="Precios"
+                value={<PriceTag price={product.price} bagPrice={product.bagPrice} />}
               />
               <InfoRow label="Stock mínimo" value={String(product.stockMin)} />
               <InfoRow
@@ -166,6 +166,8 @@ export function ProductDetailPage() {
         productName={product.name}
         currentStock={product.stock}
         productUnit={product.unit}
+        price={product.price}
+        bagPrice={product.bagPrice}
         direction={stockTarget?.direction ?? 'in'}
       />
       <ConfirmationDialog />

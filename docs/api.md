@@ -71,14 +71,14 @@ protegidas, dejando claro que la auth no está preparada (nunca la saltea).
 | Método | Ruta | Descripción | Request (conceptual) | Response |
 |---|---|---|---|---|
 | GET | `/products` | Listar productos (filtros: `status`, `categoryId`, `supplierId`, `search`, `lowStock`; paginado) | query params | `{ data: { items[], total, page, limit, totalPages } }` |
-| POST | `/products` | Crear producto (stock inicial => movimiento `BUY` `"Stock inicial"`; `unit` = `UNITS` por unidad/bolsa o `KG` suelto con decimales; `price` normal y `promoPrice` oferta opcionales — en `KG` el precio es por kilogramo) | `{ name, categoryId, supplierId?, stock?, stockMin?, unit?, price?, promoPrice?, imageUrl? }` | `201 { product }` |
+| POST | `/products` | Crear producto (stock inicial => movimiento `BUY` `"Stock inicial"`; `unit` = `UNITS` stock por unidad/bolsa o `KG` suelto con decimales; `price` = precio por kilo y `bagPrice` = precio por bolsa, independientes, al menos uno obligatorio) | `{ name, categoryId, supplierId?, stock?, stockMin?, unit?, price?, bagPrice?, imageUrl? }` | `201 { product }` |
 | GET | `/products/trash` | Listar productos `INACTIVE` | — | `{ items[] }` |
 | GET | `/products/:id` | Detalle con relaciones (categoría, proveedor) | — | `{ product }` |
-| PATCH | `/products/:id` | Actualizar datos (NUNCA toca stock; la unidad se puede cambiar libremente; `promoPrice <= price`) | `{ name?, categoryId?, supplierId?, stockMin?, unit?, price?, promoPrice?, status?, imageUrl? }` | `{ product }` |
+| PATCH | `/products/:id` | Actualizar datos (NUNCA toca stock; la unidad se puede cambiar libremente; `price` y `bagPrice` independientes, al menos uno debe quedar cargado) | `{ name?, categoryId?, supplierId?, stockMin?, unit?, price?, bagPrice?, status?, imageUrl? }` | `{ product }` |
 | DELETE | `/products/:id` | Pasar a `INACTIVE` (papelera) — no borra físico | — | `{ product }` |
 | POST | `/products/:id/restore` | Restaurar a `ACTIVE` (valida relaciones) | — | `{ product }` |
 | POST | `/products/:id/stock/in` | Entrada de stock (`BUY` o `MANUAL_ADJUST`) | `{ type, quantity, supplierId?, note? }` | `{ data: { product, movement } }` |
-| POST | `/products/:id/stock/out` | Salida de stock (`SALE`, `BREAKAGE`, `EXPIRY`, `DONATION`, `INTERNAL_CONSUMPTION`, `MANUAL_ADJUST`) | `{ type, quantity, supplierId?, note? }` | `{ data: { product, movement } }` |
+| POST | `/products/:id/stock/out` | Salida de stock (`SALE`, `BREAKAGE`, `EXPIRY`, `DONATION`, `INTERNAL_CONSUMPTION`, `MANUAL_ADJUST`; en `SALE` es obligatorio `priceType: KILO\|BAG` indicando con cuál precio se vendió, y el producto debe tenerlo cargado) | `{ type, quantity, supplierId?, clientId?, priceType?, note? }` | `{ data: { product, movement } }` |
 | GET | `/products/:id/movements` | Historial del producto (filtro `type`, paginado) | query `?page=&type=` | `{ data: paginated }` |
 
 ### Categorías

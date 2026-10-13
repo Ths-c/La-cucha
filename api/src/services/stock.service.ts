@@ -1,6 +1,6 @@
 import { AppError } from '../utils/app-error'
 import { ERROR_CODES } from '../constants/errors'
-import type { MovementType } from '@prisma/client'
+import type { MovementType, PriceType } from '@prisma/client'
 import type { StockMovementRepository } from '../repositories/stock-movement.repository'
 import type { ProductRepository, Tx } from '../repositories/product.repository'
 import type { StockAdjustmentResult, StockDirection } from '../types/domain'
@@ -10,6 +10,7 @@ export interface StockAdjustmentInput {
   quantity: number
   supplierId?: number
   clientId?: number
+  priceType?: PriceType
   note?: string
 }
 
@@ -62,6 +63,13 @@ export class StockService {
     if (input.quantity <= 0) {
       throw new AppError(400, ERROR_CODES.VALIDATION_ERROR, 'La cantidad debe ser mayor a 0')
     }
+    // La venta siempre indica con cuál precio se vendió; el resto no lo lleva.
+    if (input.type === 'SALE' && input.priceType == null) {
+      throw new AppError(400, ERROR_CODES.VALIDATION_ERROR, 'Indicá el precio de venta (por kilo o por bolsa)')
+    }
+    if (input.type !== 'SALE' && input.priceType != null) {
+      throw new AppError(400, ERROR_CODES.VALIDATION_ERROR, 'El precio de venta solo corresponde a ventas')
+    }
 
     return this.deps.runTransaction(async (tx) => {
       const product = await this.deps.productRepository.readForUpdate(tx, productId)
@@ -74,6 +82,16 @@ export class StockService {
 
       const previousStock = product.stock
       let resultingStock = previousStock
+
+      // La venta exige que el producto tenga cargado el precio elegido.
+      if (input.type === 'SALE') {
+        if (input.priceType === 'KILO' && product.price == null) {
+          throw new AppError(400, ERROR_CODES.VALIDATION_ERROR, 'El producto no tiene precio por kilo cargado')
+        }
+        if (input.priceType === 'BAG' && product.bagPrice == null) {
+          throw new AppError(400, ERROR_CODES.VALIDATION_ERROR, 'El producto no tiene precio por bolsa cargado')
+        }
+      }
 
       if (direction === 'in') {
         const ok = await this.deps.productRepository.incrementStock(tx, productId, input.quantity)
@@ -103,6 +121,7 @@ export class StockService {
         stockAfter: resultingStock,
         supplierId: input.supplierId ?? null,
         clientId: input.clientId ?? null,
+        priceType: input.priceType ?? null,
         note: input.note ?? null,
       })
 
@@ -114,6 +133,7 @@ export class StockService {
           quantity: movement.quantity,
           previousStock: movement.stockBefore,
           resultingStock: movement.stockAfter,
+          priceType: movement.priceType,
           note: movement.note,
           createdAt: movement.createdAt,
         },

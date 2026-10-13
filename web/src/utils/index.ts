@@ -81,6 +81,7 @@ export function pricePerLabel(unit: ProductUnit): string {
   return unit === 'KG' ? 'por kilogramo' : 'por unidad'
 }
 
-export function isOnPromo(price: number | null, promoPrice: number | null): promoPrice is number {
-  return price != null && promoPrice != null && promoPrice < price
+export const PRICE_TYPE_LABELS: Record<string, string> = {
+  KILO: 'Por kilo',
+  BAG: 'Por bolsa',
 }

@@ -171,7 +171,7 @@ export function ProductsPage() {
                         <StockBadge stock={p.stock} stockMin={p.stockMin} unit={p.unit} />
                       </td>
                       <td className="px-4 py-2.5">
-                        <PriceTag price={p.price} promoPrice={p.promoPrice} unit={p.unit} />
+                        <PriceTag price={p.price} bagPrice={p.bagPrice} />
                       </td>
                       <td className="px-4 py-2.5">
                         <Badge tone={p.status === 'ACTIVE' ? 'green' : 'slate'}>{STATUS_LABELS[p.status]}</Badge>
@@ -216,7 +216,7 @@ export function ProductsPage() {
                       </p>
                       <div className="mt-2 flex flex-wrap items-center gap-2">
                         <StockBadge stock={p.stock} stockMin={p.stockMin} unit={p.unit} />
-                        <PriceTag price={p.price} promoPrice={p.promoPrice} unit={p.unit} />
+                        <PriceTag price={p.price} bagPrice={p.bagPrice} />
                         <Badge tone={p.status === 'ACTIVE' ? 'green' : 'slate'}>{STATUS_LABELS[p.status]}</Badge>
                       </div>
                     </div>
@@ -263,6 +263,8 @@ export function ProductsPage() {
         productName={stockTarget?.product.name ?? ''}
         currentStock={stockTarget?.product.stock ?? 0}
         productUnit={stockTarget?.product.unit ?? 'UNITS'}
+        price={stockTarget?.product.price ?? null}
+        bagPrice={stockTarget?.product.bagPrice ?? null}
         direction={stockTarget?.direction ?? 'in'}
       />
       <ConfirmationDialog />

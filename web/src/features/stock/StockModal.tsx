@@ -17,7 +17,7 @@ import {
   type StockInFormValues,
   type StockOutFormValues,
 } from '@/schemas/form'
-import { MOVEMENT_LABELS, UNIT_SHORT, formatQuantity } from '@/utils'
+import { MOVEMENT_LABELS, UNIT_SHORT, formatPrice, formatQuantity } from '@/utils'
 import type { ProductUnit } from '@/types/domain'
 
 export type StockDirection = 'in' | 'out'
@@ -29,6 +29,8 @@ interface StockModalProps {
   productName: string
   currentStock: number
   productUnit?: ProductUnit
+  price?: number | null
+  bagPrice?: number | null
   direction: StockDirection
 }
 
@@ -51,6 +53,8 @@ export function StockModal({
   productName,
   currentStock,
   productUnit = 'UNITS',
+  price = null,
+  bagPrice = null,
   direction,
 }: StockModalProps) {
   const toast = useToast()
@@ -82,6 +86,7 @@ export function StockModal({
 
   const outType = watch('type')
   const isSale = !isIn && outType === 'SALE'
+  const allValues = watch() as StockOutFormValues
 
   const close = () => {
     reset()
@@ -113,6 +118,7 @@ export function StockModal({
             type: input.type,
             quantity: Number(input.quantity),
             ...(isSale && input.clientId ? { clientId: Number(input.clientId) } : {}),
+            ...(isSale && input.priceType ? { priceType: input.priceType } : {}),
             ...(input.note?.trim() ? { note: input.note.trim() } : {}),
           },
         })
@@ -164,6 +170,56 @@ export function StockModal({
             options={supplierOptions}
             {...register('supplierId')}
           />
+        )}
+        {isSale && (
+          <fieldset>
+            <legend className="mb-1.5 block text-sm font-medium text-slate-700">Precio de venta</legend>
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              <label
+                className={`flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-sm ${
+                  price == null ? 'cursor-not-allowed opacity-50' : ''
+                } ${allValues.priceType === 'KILO' ? 'border-emerald-500 bg-emerald-50' : 'border-slate-200'}`}
+              >
+                <input
+                  type="radio"
+                  value="KILO"
+                  disabled={price == null}
+                  {...register('priceType' as never)}
+                  className="size-4 text-emerald-600"
+                />
+                <span>
+                  Por kilo
+                  <span className="block text-xs text-slate-500">
+                    {price != null ? formatPrice(price) : 'Sin precio'}
+                  </span>
+                </span>
+              </label>
+              <label
+                className={`flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-sm ${
+                  bagPrice == null ? 'cursor-not-allowed opacity-50' : ''
+                } ${allValues.priceType === 'BAG' ? 'border-emerald-500 bg-emerald-50' : 'border-slate-200'}`}
+              >
+                <input
+                  type="radio"
+                  value="BAG"
+                  disabled={bagPrice == null}
+                  {...register('priceType' as never)}
+                  className="size-4 text-emerald-600"
+                />
+                <span>
+                  Por bolsa
+                  <span className="block text-xs text-slate-500">
+                    {bagPrice != null ? formatPrice(bagPrice) : 'Sin precio'}
+                  </span>
+                </span>
+              </label>
+            </div>
+            {(errors as unknown as Record<string, { message?: string }>).priceType?.message && (
+              <p className="mt-1 text-xs text-red-600">
+                {(errors as unknown as Record<string, { message?: string }>).priceType?.message}
+              </p>
+            )}
+          </fieldset>
         )}
         {isSale && (
           <Select

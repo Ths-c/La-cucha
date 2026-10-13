@@ -42,7 +42,7 @@ DATABASE_URL="<prisma url directa>" npx prisma migrate deploy
 
 > Si `GET /api/dashboard/summary` devuelve `500` tras el deploy de la versión
 > de unidades/KG, es drift de esquema: la migración `20260924_units_kg_price`
-> (enum `Unit`, `stock` a `DOUBLE PRECISION`, `+ unit/price/promoPrice`) no se
+> (enum `Unit`, `stock` a `DOUBLE PRECISION`, `+ unit/price/bagPrice`) no se
 > aplicó en la DB de prod. Verifica con:
 > `SELECT column_name FROM information_schema.columns WHERE table_name='products'`
 > (debe existir `price`) y re-corre el `migrate deploy` con la URL directa.
@@ -57,7 +57,7 @@ DATABASE_URL="<prisma url directa>" npx prisma migrate deploy
 > 1. Pegar el contenido íntegro de
 >    `api/prisma/migrations/20260924_units_kg_price/migration.sql` en el SQL
 >    editor de Supabase y ejecutarlo (es idempotente; crea el tipo `Unit`,
->    agrega `unit/price/promoPrice`, convierte a `DOUBLE PRECISION` y crea CHECKs).
+>    agrega `unit/price/bagPrice`, convierte a `DOUBLE PRECISION` y crea CHECKs).
 > 2. Registrar el historial a mano (equivale a `migrate resolve --applied`;
 >    DDL exacto del engine Prisma 6):
 >

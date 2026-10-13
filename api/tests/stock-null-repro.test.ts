@@ -16,14 +16,14 @@ describe('repro: POST /products/:id/stock/in con null', () => {
     expect(stockInSchema.parse({ type: 'BUY', quantity: 2, note: null }).note).toBeUndefined()
     expect(stockInSchema.parse({ type: 'BUY', quantity: 2, note: '' }).note).toBeUndefined()
   })
-  it('acepta stockOut con clientId: null', () => {
-    expect(stockOutSchema.parse({ type: 'SALE', quantity: 1, clientId: null })).toMatchObject({
+  it('acepta stockOut SALE con clientId: null y priceType', () => {
+    expect(stockOutSchema.parse({ type: 'SALE', quantity: 1, clientId: null, priceType: 'KILO' })).toMatchObject({
       type: 'SALE',
     })
   })
-  it('acepta createProduct con supplierId: null', () => {
+  it('acepta createProduct con supplierId: null y al menos un precio', () => {
     expect(
-      createProductSchema.parse({ name: 'X', categoryId: 1, supplierId: null }),
+      createProductSchema.parse({ name: 'X', categoryId: 1, supplierId: null, price: 1000 }),
     ).toMatchObject({ name: 'X' })
   })
 })
